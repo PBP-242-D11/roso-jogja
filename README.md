@@ -77,8 +77,14 @@ Menambahkan review kepada restoran yang sebelumnya sudah pernah dipesan|Penjual 
 
 ## Role atau Peran
 1. Pembeli
+
 Peran utama di aplikasi, pembeli dapat membeli makanan dari sebuah restoran, menambahkan makanan kepada wishlist, dan menulis review terhadap suatu restoran.
+
 2. Penjual
+
 Penjual dapat memodifikasi makanan yang terdapat di restoran yang dimilikinya.
+
 3. Admin Aplikasi
+
 Admin dapat menambahkan, memodifikasi, dan menghapus restoran yang terdapat dalam aplikasi, menambahkan promo untuk digunakan oleh pembeli, dan menghapus review yang ditujukan kepada suatu restoran.
+
