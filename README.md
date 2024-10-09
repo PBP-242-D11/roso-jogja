@@ -1,11 +1,11 @@
 # roso-jogja
 
 ## Nama Anggota Kelompok PBP-D11:
-1. Akhdan Taufiq Syofyan
-2. Fadhli Raihan Ardiansyah
-3. Makarim Zufar Prambudyo
-4. Nadia Rahmadina Aristawati
-5. Yudayana Arif Prasojo
+1. Akhdan Taufiq Syofyan (2306152475)
+2. Fadhli Raihan Ardiansyah (2306207594)
+3. Makarim Zufar Prambudyo (2306241751)
+4. Nadia Rahmadina Aristawati (2306207972)
+5. Yudayana Arif Prasojo (2306215160)
 
 ## Deskripsi Aplikasi
 Baru tiba di Jogja dan perut mulai keroncongan, tapi Anda bingung harus mulai dari mana untuk menemukan kuliner terbaik di kota ini.
