@@ -11,15 +11,15 @@
 Baru tiba di Jogja dan perut mulai keroncongan, tapi Anda bingung harus mulai dari mana untuk menemukan kuliner terbaik di kota ini. Dengan banyaknya pilihan makanan dari yang tradisional hingga kekinian, memilih tempat yang tepat bisa jadi memusingkan, apalagi jika waktu terbatas. RosoJogja hadir untuk memudahkan Anda menemukan kuliner yang sesuai dengan kebutuhan dan keinginan Anda di Jogja. Fokus aplikasi ini adalah memberikan rekomendasi makanan terdekat dengan cepat dan praktis.
 
 Fitur yang disediakan:
-- **Pencarian Berbasis Lokasi**
+- **Pencarian Berbasis Lokasi** <br>
 Aplikasi secara otomatis memberikan rekomendasi kuliner terdekat dari lokasi Anda, membantu Anda menemukan makanan dengan cepat dan mudah.
-- **Kategori Makanan**
+- **Kategori Makanan** <br>
 Pengguna dapat memilih kategori makanan yang diinginkan, seperti makanan tradisional, makanan kekinian, jajanan pasar, atau minuman khas Jogja, sehingga pencarian menjadi lebih terarah.
-- **Informasi Jam Buka**
+- **Informasi Jam Buka** <br>
 Setiap tempat yang direkomendasikan menampilkan informasi jam buka secara real-time, memastikan Anda hanya melihat tempat yang siap melayani.
-- **Ulasan Singkat dan Rating**
+- **Ulasan Singkat dan Rating** <br>
 Setiap rekomendasi dilengkapi dengan ulasan singkat dan rating dari pengguna lain, sehingga Anda bisa membuat keputusan yang lebih informasional sebelum mencoba.
-- **Filter Harga**
+- **Filter Harga** <br>
 Sesuaikan pilihan Anda dengan anggaran yang dimiliki melalui fitur filter harga, agar kuliner yang direkomendasikan sesuai dengan dompet Anda.
 Dengan fokus pada fitur yang sederhana namun esensial, RosoJogja dirancang untuk memudahkan siapa pun yang baru datang ke Jogja agar bisa menemukan makanan dengan cepat, tepat, dan tanpa kebingungan.
 
