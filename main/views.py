@@ -2,6 +2,7 @@ import datetime
 
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
@@ -11,6 +12,16 @@ from main.forms import CustomRegisterForm
 
 
 # Create your views here.
+@login_required(login_url="/login/")
+def show_main(request):
+    context = {
+        "user": request.user,
+        "last_login": request.COOKIES.get("last_login"),
+    }
+
+    return render(request, "main.html", context)
+
+
 def register(request):
     form = CustomRegisterForm()
 
