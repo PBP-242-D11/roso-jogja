@@ -10,8 +10,15 @@
           </h1>
         </a>
       </div>
-      <div class="hidden md:flex items-center">
+      <div class="hidden md:flex items-center max-h-full">
         {% if user.is_authenticated %}
+        <div class="flex justify-center items-center px-2">
+          <img
+            src="{{ user.profile_picture.url }}"
+            alt="User profile image"
+            class="object-cover h-10 w-10 rounded-full"
+          />
+        </div>
         <span class="text-gray-800 mr-4">Welcome, {{ user.username }}</span>
         <a
           href="#"
@@ -55,9 +62,18 @@
   <div class="mobile-menu hidden md:hidden px-4 w-full md:max-w-full">
     <div class="pt-2 pb-3 space-y-1 mx-auto">
       {% if user.is_authenticated %}
-      <span class="block text-green-800 px-3 py-2 border-b-2"
-        >Welcome, <b>{{ user.username }}</b>
-      </span>
+      <div class="border-b-2 flex flex-row items-center justify-center py-2">
+        <div class="flex justify-center items-center px-2">
+          <img
+            src="{{ user.profile_picture.url }}"
+            alt="User profile image"
+            class="object-cover h-10 w-10 rounded-full"
+          />
+        </div>
+        <span class="block text-green-800 px-3 py-2"
+          >Welcome, <b>{{ user.username }}</b>
+        </span>
+      </div>
       <a
         href="#"
         class="block text-center font-bold py-2 px-4 transition duration-300"
