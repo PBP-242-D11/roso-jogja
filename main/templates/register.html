@@ -12,6 +12,7 @@
       method="POST"
       action=""
       class="flex items-center justify-center flex-col gap-4 w-full my-7"
+      enctype="multipart/form-data"
     >
       {% csrf_token %}
       <input type="hidden" name="remember" value="true" />

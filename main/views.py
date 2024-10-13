@@ -30,7 +30,7 @@ def register(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Account created successfully")
-            return redirect("main:register")
+            return redirect("main:login")
 
     context = {"form": form}
     return render(request, "register.html", context)

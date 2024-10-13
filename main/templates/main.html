@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block meta %}
 <title>Home</title>
-{% endblock meta %} {% block content %}
+{% endblock meta %} {% block content %} {% include 'navbar.html' %}
 <div>
   <section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
     <div class="w-full h-full bg-white/80 p-6 rounded-xl space-y-2">
@@ -23,7 +23,7 @@
         <p
           class="max-w-[600px] text-green-800 md:text-xl w-full text-center block"
         >
-          Temukan restoran yang pas di Jogja!
+          Temukan rasa yang pas di Jogja!
         </p>
       </header>
     </div>
