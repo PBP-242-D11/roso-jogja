@@ -1,7 +1,7 @@
 import datetime
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponseRedirect
@@ -36,7 +36,7 @@ def register(request):
     return render(request, "register.html", context)
 
 
-def user_login(request):
+def login_user(request):
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)
 
@@ -56,3 +56,10 @@ def user_login(request):
         form = AuthenticationForm(request)
     context = {"form": form}
     return render(request, "login.html", context)
+
+
+def logout_user(request):
+    logout(request)
+    response = HttpResponseRedirect(reverse("main:login"))
+    response.delete_cookie("last_login")
+    return redirect("main:login")

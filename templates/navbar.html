@@ -1,3 +1,4 @@
+{% load static %}
 <nav
   class="bg-white shadow-lg fixed top-0 left-0 z-40 w-screen font-['Poppins']"
 >
@@ -14,14 +15,14 @@
         {% if user.is_authenticated %}
         <div class="flex justify-center items-center px-2">
           <img
-            src="{{ user.profile_picture.url }}"
+            src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
             alt="User profile image"
             class="object-cover h-10 w-10 rounded-full"
           />
         </div>
         <span class="text-gray-800 mr-4">Welcome, {{ user.username }}</span>
         <a
-          href="#"
+          href="{% url 'main:logout' %}"
           class="text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300"
         >
           Logout
@@ -65,7 +66,7 @@
       <div class="border-b-2 flex flex-row items-center justify-center py-2">
         <div class="flex justify-center items-center px-2">
           <img
-            src="{{ user.profile_picture.url }}"
+            src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
             alt="User profile image"
             class="object-cover h-10 w-10 rounded-full"
           />
@@ -80,7 +81,7 @@
         >Restaurants</a
       >
       <a
-        href="#"
+        href="{% url 'main:logout' %}"
         class="block text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300"
       >
         Logout
