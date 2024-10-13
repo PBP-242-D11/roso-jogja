@@ -69,7 +69,9 @@
     {% endif %}
     <p class="w-full text-center text-sm md:text-base">
       Already have an account?
-      <a href="#" class="text-green-700 hover:underline whitespace-nowrap"
+      <a
+        href="{% url 'main:login' %}"
+        class="text-green-700 hover:underline whitespace-nowrap"
         >Login here</a
       >
     </p>
