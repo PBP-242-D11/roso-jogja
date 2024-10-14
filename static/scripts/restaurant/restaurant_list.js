@@ -1,3 +1,5 @@
+const PAGE_WIDTH = 2;
+
 async function getRestaurants(page) {
   const response = await fetch(`api/restaurants/?page=${page}&page_size=8`);
   return await response.json();
@@ -5,14 +7,22 @@ async function getRestaurants(page) {
 
 async function refreshRestaurants(page) {
   const response = await getRestaurants(page);
+  if (response.current_page != page) {
+    window.location.href = `?page=${response.current_page}`;
+  }
+
   const user_data = await fetch("/user/").then((response) => response.json());
+
   const restaurantList = document.getElementById("restaurant-list");
   let htmlString = "";
+
   if (response.results.length === 0) {
     return;
   }
+
   restaurantList.className =
     "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
+
   response.results.forEach((restaurant) => {
     htmlString += `<div class="relative group h-full">
                 <div class="flex flex-col items-center justify-between group rounded-md shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full">
@@ -57,40 +67,59 @@ async function refreshRestaurants(page) {
               </div>`;
   });
 
-  const navBtnContainer = document.getElementById("nav-btn-container");
-  navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
   restaurantList.innerHTML = htmlString;
 
-  document.getElementById("prev-btn").addEventListener("click", async () => {
-    if (isLoading) return;
-    isLoading = true;
-    const currentPage = parseInt(
-      document.getElementById("page-info").innerText.split(" ")[1],
-    );
-    if (currentPage === 1) return;
-    await refreshRestaurants(currentPage - 1);
-    isLoading = false;
-  });
-
-  document.getElementById("next-btn").addEventListener("click", async () => {
-    if (isLoading) return;
-    isLoading = true;
-    const currentPage = parseInt(
-      document.getElementById("page-info").innerText.split(" ")[1],
-    );
-    const numPages = parseInt(
-      document.getElementById("page-info").innerText.split(" ")[3],
-    );
-    if (currentPage === numPages) return;
-    await refreshRestaurants(currentPage + 1);
-    isLoading = false;
-  });
+  const navBtnContainer = document.getElementById("nav-btn-container");
+  navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
 
   const pageInfo = document.getElementById("page-info");
-  pageInfo.innerHTML = `Page ${response.current_page} of ${response.num_pages}`;
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const pageClass =
+    "rounded-lg w-10 aspect-square flex justify-center items-center";
+
+  pageString = "";
+  if (response.current_page > 1 + PAGE_WIDTH) {
+    pageString += `<a href="?page=1" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">1</a>`;
+    pageString += `<span class="font-semibold text-green-800">...</span>`;
+  }
+  response.page_range.forEach((page) => {
+    if (
+      page < response.current_page - PAGE_WIDTH ||
+      page > response.current_page + PAGE_WIDTH
+    ) {
+      return;
+    }
+    if (page === response.current_page) {
+      pageString += `<span class="${pageClass} text-green-800">${page}</span>`;
+    } else {
+      pageString += `<a href="?page=${page}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${page}</a>`;
+    }
+  });
+  if (response.current_page < response.num_pages - PAGE_WIDTH) {
+    pageString += `<span class="font-semibold text-green-800">...</span>`;
+    pageString += `<a href="?page=${response.num_pages}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${response.num_pages}</a>`;
+  }
+
+  pageInfo.innerHTML = pageString;
+
+  if (response.has_previous) {
+    prevBtn.href = `?page=${response.current_page - 1}`;
+  } else {
+    prevBtn.classList.add("hidden");
+  }
+
+  if (response.has_next) {
+    nextBtn.href = `?page=${response.current_page + 1}`;
+  } else {
+    nextBtn.classList.add("hidden");
+  }
 }
 
-refreshRestaurants(1);
+const url = new URL(window.location.href);
+const page = url.searchParams.get("page") || 1;
+
+refreshRestaurants(page);
 
 let isLoading = false;
 

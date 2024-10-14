@@ -10,5 +10,6 @@ class RestaurantForm(ModelForm):
         model = Restaurant
         fields = ["name", "price_range", "address", "description"]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 5}),
+            "address": forms.Textarea(attrs={"rows": 2}),
+            "description": forms.Textarea(attrs={"rows": 3}),
         }

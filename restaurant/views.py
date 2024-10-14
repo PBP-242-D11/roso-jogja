@@ -53,10 +53,11 @@ def restaurant_list(request):
         {
             "count": paginator.count,
             "num_pages": paginator.num_pages,
+            "page_range": list(paginator.page_range),
             "current_page": page_obj.number,
-            "results": restaurant_data,
             "has_next": page_obj.has_next(),
             "has_previous": page_obj.has_previous(),
+            "results": restaurant_data,
         }
     )
 
