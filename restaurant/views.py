@@ -56,7 +56,6 @@ def restaurant_list(request):
             "results": restaurant_data,
             "has_next": page_obj.has_next(),
             "has_previous": page_obj.has_previous(),
-            "role": request.user.role,
         }
     )
 

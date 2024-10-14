@@ -5,13 +5,15 @@
     {% include 'navbar.html' %}
     <section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
         <h1>Restaurant List</h1>
-        <div id="restaurant-list"
-             class="flex flex-col items-center justify-center w-full">
-            <p>There are no restaurants just yet!</p>
+        {% if user.is_authenticated and user.role == 'R' %}
             <button data-modal-target="crudModal"
                     data-modal-toggle="crudModal"
                     class="bg-green-700 text-white hover:bg-green-800 p-3 rounded-md font-medium"
                     onclick="showModal()">Create a Restaurant!</button>
+        {% endif %}
+        <div id="restaurant-list"
+             class="flex flex-col items-center justify-center w-full">
+            <p>There are no restaurants just yet!</p>
         </div>
         <div class="hidden" id="nav-btn-container">
             <button id="prev-btn"

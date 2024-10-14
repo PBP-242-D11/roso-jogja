@@ -7,21 +7,23 @@
     {% include 'navbar.html' %}
     <div>
         <section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
-            <div class="w-full h-full bg-white/80 p-6 rounded-xl space-y-2">
-                <h5 class="text-lg md:text-2xl text-green-800">
-                    Hi, <b>{{ user.username }}</b>
-                </h5>
-                <h5 class="text-sm md:text-base">
-                    Last logged in:
-                    <br class="block md:hidden" />
-                    <b>{{ last_login }}</b>
-                </h5>
-                <h5 class="text-sm md:text-base">
-                    Currently logged in as:
-                    <br class="block md:hidden" />
-                    <b>{{ user.get_role_display }}</b>
-                </h5>
-            </div>
+            {% if user.is_authenticated %}
+                <div class="w-full h-full bg-white/80 p-6 rounded-xl space-y-2">
+                    <h5 class="text-lg md:text-2xl text-green-800">
+                        Hi, <b>{{ user.username }}</b>
+                    </h5>
+                    <h5 class="text-sm md:text-base">
+                        Last logged in:
+                        <br class="block md:hidden" />
+                        <b>{{ last_login }}</b>
+                    </h5>
+                    <h5 class="text-sm md:text-base">
+                        Currently logged in as:
+                        <br class="block md:hidden" />
+                        <b>{{ user.get_role_display }}</b>
+                    </h5>
+                </div>
+            {% endif %}
             <div class="flex flex-col items-center justify-evenly h-full grow">
                 <header class="flex flex-col items-center justify-center gap-5 my-10">
                     <h1 class="text-4xl font-bold tracking-tighter text-green-900 sm:text-5xl xl:text-6xl/none text-center w-full">

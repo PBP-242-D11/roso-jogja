@@ -5,6 +5,7 @@ async function getRestaurants(page) {
 
 async function refreshRestaurants(page) {
   const response = await getRestaurants(page);
+  const user_data = await fetch("/user/").then((response) => response.json());
   const restaurantList = document.getElementById("restaurant-list");
   let htmlString = "";
   if (response.results.length === 0) {
@@ -29,7 +30,7 @@ async function refreshRestaurants(page) {
                     </a>
                 </div>
                 ${
-                  response.role === "R"
+                  user_data.role === "R"
                     ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
                     <a href="/restaurant/delete/${restaurant.id}"
                        class="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition duration-300 shadow-md">
