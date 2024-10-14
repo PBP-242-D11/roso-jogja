@@ -52,5 +52,34 @@ def restaurant_list(request):
     )
 
 
+@require_GET
+def restaurant_detail(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+    foods = restaurant.foods.all()
+
+    return JsonResponse(
+        {
+            "id": restaurant.id,
+            "name": restaurant.name,
+            "description": restaurant.description,
+            "address": restaurant.address,
+            "price_range": restaurant.price_range,
+            "foods": [
+                {
+                    "id": food.id,
+                    "name": food.name,
+                    "description": food.description,
+                    "price": food.price,
+                }
+                for food in foods
+            ],
+        }
+    )
+
+
+def show_restaurant_detail(request, id):
+    return render(request, "restaurant_detail.html")
+
+
 def show_restaurants(request):
     return render(request, "restaurant_list.html")

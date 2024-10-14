@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}<title>Restaurant Detail</title>{% endblock %}
+{% block content %}
+    {% include 'navbar.html' %}
+    <section class="min-h-screen pt-24 px-3 md:px-10">
+        <a href="{% url 'restaurant:show_restaurants' %}">Back</a>
+        <div class="flex flex-col items-center gap-10 p-10">
+            <div id='restaurant-meta'></div>
+            <div id='restaurant-foods' class="flex flex-col gap-2"></div>
+        </div>
+    </section>
+    <script src="{% static 'scripts/restaurant/restaurant_detail.js' %}"></script>
+{% endblock %}
