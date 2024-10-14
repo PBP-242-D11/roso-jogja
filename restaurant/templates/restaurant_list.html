@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {% load static %} {% block meta %}<title>
+  Restaurant List</title
+>{% endblock %} {% block content %} {% include 'navbar.html' %}
+<section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
+  <h1>Restaurant List</h1>
+  <div
+    id="restaurant-list"
+    class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10"
+  ></div>
+  <div class="flex justify-center items-center gap-3 p-5">
+    <button
+      id="prev-btn"
+      class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+    >
+      Prev
+    </button>
+    <span id="page-info"></span>
+    <button
+      id="next-btn"
+      class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+    >
+      Next
+    </button>
+  </div>
+</section>
+<script src="{% static 'scripts/restaurant_list.js' %}"></script>
+{% endblock %}
