@@ -119,6 +119,21 @@ def delete_restaurant(request, id):
     return HttpResponseRedirect(reverse("restaurant:show_restaurants"))
 
 
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["R"])
+def update_restaurant(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+
+    form = RestaurantForm(request.POST or None, instance=restaurant)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+
+        return HttpResponseRedirect(reverse("restaurant:show_restaurants"))
+
+    return render(request, "restaurant_update.html", {"form": form})
+
+
 def show_restaurant_detail(request, id):
     return render(request, "restaurant_detail.html")
 

@@ -32,6 +32,15 @@ async function refreshRestaurants(page) {
                 ${
                   user_data.role === "R"
                     ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
+                    <a href="/restaurant/update/${restaurant.id}"
+                       class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition duration-300 shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6 sm:h-8 sm:w-8"
+                             viewBox="0 0 20 20"
+                             fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                    </a>
                     <a href="/restaurant/delete/${restaurant.id}"
                        class="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition duration-300 shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg"
