@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from common.decorators import role_required
 
+from .forms import RestaurantForm
 from .models import Restaurant
 
 
@@ -86,13 +87,12 @@ def restaurant_detail(request, id):
 
 
 @require_POST
-@csrf_exempt
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
 def create_restaurant(request):
     name = request.POST.get("name")
     address = request.POST.get("address")
-    price_range = request.POST.get("price-range")
+    price_range = request.POST.get("price_range")
     description = request.POST.get("description")
 
     owner = request.user
@@ -124,4 +124,5 @@ def show_restaurant_detail(request, id):
 
 
 def show_restaurants(request):
-    return render(request, "restaurant_list.html")
+    context = {"form": RestaurantForm()}
+    return render(request, "restaurant_list.html", context)

@@ -48,45 +48,8 @@
                 <!-- Modal body -->
                 <div class="px-6 py-4 space-y-6 form-style">
                     <form id="createRestaurantForm" class="max-h-[60vh] overflow-auto">
-                        <div class="mb-4">
-                            <label for="name" class="block text-xs md:text-sm font-medium text-gray-700">Name</label>
-                            <input type="text"
-                                   id="name"
-                                   name="name"
-                                   class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-green-700 text-xs md:text-sm"
-                                   placeholder="What is the name of your Restaurant?"
-                                   required>
-                        </div>
-                        <div class="mb-4">
-                            <label for="address"
-                                   class="block text-xs md:text-sm font-medium text-gray-700">Address</label>
-                            <input type="text"
-                                   id="address"
-                                   name="address"
-                                   class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-green-700 text-xs md:text-sm"
-                                   placeholder="Where is your Restaurant located?"
-                                   required>
-                        </div>
-                        <div class="mb-4">
-                            <label for="price-range"
-                                   class="block text-xs md:text-sm font-medium text-gray-700">Price Range</label>
-                            <input type="text"
-                                   id="price-range"
-                                   name="price-range"
-                                   class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-green-700 text-xs md:text-sm"
-                                   placeholder="What is the price range of your Restaurant?"
-                                   required>
-                        </div>
-                        <div class="mb-4">
-                            <label for="description"
-                                   class="block text-xs md:text-sm font-medium text-gray-700">Description</label>
-                            <textarea id="description"
-                                      name="description"
-                                      rows="2"
-                                      class="mt-1 block w-full h-52 resize-none border border-gray-300 rounded-md p-2 hover:border-green-700 text-xs md:text-sm"
-                                      placeholder="Describe your Restaurant"
-                                      required></textarea>
-                        </div>
+                        {% csrf_token %}
+                        {{ form.as_p }}
                         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-xs md:text-sm hidden"
                              role="alert"
                              id="formErrorMessage">
