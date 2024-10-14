@@ -14,13 +14,15 @@ async function refreshRestaurants(page) {
                     <img src="/static/images/restaurant_placeholder.png"
                          alt="Plant placeholder"
                          class="w-auto h-60 p-2" />
-                    <div class="bg-white p-4 flex flex-col gap-2 w-full">
-                        <div class="flex flex-col">
-                            <h3 class="font-semibold text-lg text-green-800 tracking-wide">${restaurant.name}</h3>
-                            <p class="text-green-600">${restaurant.price_range}</p>
-                        </div>
-                        <p class="text-green-600">${restaurant.description}</p>
-                    </div>
+                    <a href="/restaurant/${restaurant.id}" class="block w-full">
+                      <div class="bg-white p-4 flex flex-col gap-2 w-full">
+                          <div class="flex flex-col">
+                              <h3 class="font-semibold text-lg text-green-800 tracking-wide">${restaurant.name}</h3>
+                              <p class="text-green-600">${restaurant.price_range}</p>
+                          </div>
+                          <p class="text-green-600">${restaurant.description}</p>
+                      </div>
+                    </a>
                 </div>
             </div>`;
   });
@@ -33,15 +35,22 @@ async function refreshRestaurants(page) {
 
 refreshRestaurants(1);
 
-document.getElementById("prev-btn").addEventListener("click", () => {
+let isLoading = false;
+
+document.getElementById("prev-btn").addEventListener("click", async () => {
+  if (isLoading) return;
+  isLoading = true;
   const currentPage = parseInt(
     document.getElementById("page-info").innerText.split(" ")[1],
   );
   if (currentPage === 1) return;
-  refreshRestaurants(currentPage - 1);
+  await refreshRestaurants(currentPage - 1);
+  isLoading = false;
 });
 
-document.getElementById("next-btn").addEventListener("click", () => {
+document.getElementById("next-btn").addEventListener("click", async () => {
+  if (isLoading) return;
+  isLoading = true;
   const currentPage = parseInt(
     document.getElementById("page-info").innerText.split(" ")[1],
   );
@@ -49,5 +58,6 @@ document.getElementById("next-btn").addEventListener("click", () => {
     document.getElementById("page-info").innerText.split(" ")[3],
   );
   if (currentPage === numPages) return;
-  refreshRestaurants(currentPage + 1);
+  await refreshRestaurants(currentPage + 1);
+  isLoading = false;
 });
