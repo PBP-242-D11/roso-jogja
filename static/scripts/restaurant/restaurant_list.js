@@ -4,15 +4,15 @@ async function getRestaurants(page) {
 }
 
 async function refreshRestaurants(page) {
-  const restaurants = await getRestaurants(page);
+  const response = await getRestaurants(page);
   const restaurantList = document.getElementById("restaurant-list");
   let htmlString = "";
-  if (restaurants.results.length === 0) {
+  if (response.results.length === 0) {
     return;
   }
   restaurantList.className =
     "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
-  restaurants.results.forEach((restaurant) => {
+  response.results.forEach((restaurant) => {
     htmlString += `<div class="relative group h-full">
                 <div class="flex flex-col items-center justify-between group rounded-md shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full">
                     <img src="/static/images/restaurant_placeholder.png"
@@ -28,7 +28,23 @@ async function refreshRestaurants(page) {
                       </div>
                     </a>
                 </div>
-            </div>`;
+                ${
+                  response.role === "R"
+                    ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
+                    <a href="/restaurant/delete/${restaurant.id}"
+                       class="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition duration-300 shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6 sm:h-8 sm:w-8"
+                             viewBox="0 0 20 20"
+                             fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </div>
+                `
+                    : ""
+                }
+              </div>`;
   });
 
   const navBtnContainer = document.getElementById("nav-btn-container");
@@ -61,7 +77,7 @@ async function refreshRestaurants(page) {
   });
 
   const pageInfo = document.getElementById("page-info");
-  pageInfo.innerHTML = `Page ${restaurants.current_page} of ${restaurants.num_pages}`;
+  pageInfo.innerHTML = `Page ${response.current_page} of ${response.num_pages}`;
 }
 
 refreshRestaurants(1);
