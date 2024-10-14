@@ -10,6 +10,7 @@
             <div class="hidden md:flex items-center max-h-full">
                 <a href="{% url 'restaurant:show_restaurants' %}"
                    class="block text-center font-bold py-2 px-4 transition duration-300">Restaurants</a>
+                {% if user.is_authenticated %}{% endif %}
             </div>
             <div class="hidden md:flex items-center max-h-full">
                 {% if user.is_authenticated %}

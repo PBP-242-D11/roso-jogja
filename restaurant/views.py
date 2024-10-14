@@ -1,7 +1,11 @@
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
+
+from common.decorators import role_required
 
 from .models import Restaurant
 
@@ -19,6 +23,9 @@ def restaurant_list(request):
         page_size = 10
 
     restaurants = Restaurant.objects.all()
+    if (request.user.is_authenticated) and (request.user.role == "R"):
+        restaurants = restaurants.filter(owner=request.user)
+
     paginator = Paginator(restaurants, page_size)
 
     try:
@@ -77,9 +84,38 @@ def restaurant_detail(request, id):
     )
 
 
+@require_POST
+@csrf_exempt
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["R"])
+def create_restaurant(request):
+    name = request.POST.get("name")
+    address = request.POST.get("address")
+    price_range = request.POST.get("price-range")
+    description = request.POST.get("description")
+
+    owner = request.user
+
+    new_restaurant = Restaurant.objects.create(
+        name=name,
+        address=address,
+        price_range=price_range,
+        description=description,
+        owner=owner,
+    )
+
+    new_restaurant.save()
+
+    return HttpResponse(b"Restaurant created successfully", status=201)
+
+
 def show_restaurant_detail(request, id):
     return render(request, "restaurant_detail.html")
 
 
 def show_restaurants(request):
     return render(request, "restaurant_list.html")
+
+
+def show_my_restaurants(request):
+    return render(request, "my_restaurants.html")
