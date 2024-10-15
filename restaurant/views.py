@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from common.decorators import role_required
 
-from .forms import RestaurantForm
+from .forms import FoodForm, RestaurantForm
 from .models import Restaurant
 
 
@@ -135,8 +135,70 @@ def update_restaurant(request, id):
     return render(request, "restaurant_update.html", {"form": form})
 
 
+@require_POST
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["R"])
+def create_food(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+    if restaurant.owner != request.user:
+        return HttpResponse(b"Unauthorized", status=401)
+
+    name = request.POST.get("name")
+    price = request.POST.get("price")
+    description = request.POST.get("description")
+
+    new_food = restaurant.foods.create(name=name, price=price, description=description)
+    new_food.save()
+
+    return HttpResponseRedirect(reverse("restaurant:show_restaurant_detail", args=[id]))
+
+
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["R"])
+def delete_food(request, restaurant_id, food_id):
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+    if restaurant.owner != request.user:
+        return HttpResponse(b"Unauthorized", status=401)
+
+    food = restaurant.foods.get(id=food_id)
+
+    food.delete()
+
+    return HttpResponseRedirect(
+        reverse("restaurant:show_restaurant_detail", args=[restaurant_id])
+    )
+
+
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["R"])
+def update_food(request, restaurant_id, food_id):
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+    if restaurant.owner != request.user:
+        return HttpResponse(b"Unauthorized", status=401)
+
+    food = restaurant.foods.get(id=food_id)
+
+    form = FoodForm(request.POST or None, instance=food)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+
+        return HttpResponseRedirect(
+            reverse("restaurant:show_restaurant_detail", args=[restaurant_id])
+        )
+
+    return render(request, "restaurant_food_update.html", {"form": form})
+
+
 def show_restaurant_detail(request, id):
-    return render(request, "restaurant_detail.html")
+    restaurant = Restaurant.objects.get(id=id)
+
+    context = {
+        "restaurant_id": id,
+        "restaurant_form": RestaurantForm(request.POST or None, instance=restaurant),
+        "food_form": FoodForm(),
+    }
+    return render(request, "restaurant_detail.html", context)
 
 
 def show_restaurants(request):
