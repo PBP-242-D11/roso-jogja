@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
@@ -12,7 +12,6 @@ from main.forms import CustomRegisterForm
 
 
 # Create your views here.
-@login_required(login_url="/login/")
 def show_main(request):
     context = {
         "user": request.user,
@@ -63,3 +62,17 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse("main:login"))
     response.delete_cookie("last_login")
     return redirect("main:login")
+
+
+@login_required(login_url="/login/")
+def get_user_data(request):
+    user_data = {
+        "id": request.user.id,
+        "role": request.user.role,
+        "username": request.user.username,
+        "phone_number": request.user.phone_number,
+        "address": request.user.address,
+        "profile_picture": request.user.profile_picture.url,
+    }
+
+    return JsonResponse(user_data)
