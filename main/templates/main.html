@@ -1,38 +1,38 @@
-{% extends 'base.html' %} {% load static %} {% block meta %}
-<title>Home</title>
-{% endblock meta %} {% block content %} {% include 'navbar.html' %}
-<div>
-  <section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
-    <div class="w-full h-full bg-white/80 p-6 rounded-xl space-y-2">
-      <h5 class="text-lg md:text-2xl text-green-800">
-        Hi, <b>{{ user.username }}</b>
-      </h5>
-      <h5 class="text-sm md:text-base">
-        Last logged in:
-        <br class="block md:hidden" />
-        <b>{{ last_login }}</b>
-      </h5>
-      <h5 class="text-sm md:text-base">
-        Currently logged in as:
-        <br class="block md:hidden" />
-        <b>{{ user.get_role_display }}</b>
-      </h5>
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+    <title>Home</title>
+{% endblock meta %}
+{% block content %}
+    {% include 'navbar.html' %}
+    <div>
+        <section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
+            <div class="flex flex-col items-center justify-evenly h-full grow">
+                <header class="flex flex-col items-center justify-center gap-5 my-10">
+                    <h1 class="text-4xl font-bold tracking-tighter text-green-900 sm:text-5xl xl:text-6xl/none text-center w-full">
+                        RosoJogja
+                    </h1>
+                    <p class="max-w-[600px] text-green-800 md:text-xl w-full text-center block">Temukan rasa yang pas di Jogja!</p>
+                </header>
+            </div>
+            {% if user.is_authenticated %}
+                <div class="w-full h-full bg-white/80 p-6 rounded-xl space-y-2">
+                    <h5 class="text-lg md:text-2xl text-green-800">
+                        Hi, <b>{{ user.username }}</b>
+                    </h5>
+                    <h5 class="text-sm md:text-base">
+                        Last logged in:
+                        <br class="block md:hidden" />
+                        <b>{{ last_login }}</b>
+                    </h5>
+                    <h5 class="text-sm md:text-base">
+                        Currently logged in as:
+                        <br class="block md:hidden" />
+                        <b>{{ user.get_role_display }}</b>
+                    </h5>
+                </div>
+            {% endif %}
+        </section>
     </div>
-    <div class="flex flex-col items-center justify-evenly h-full grow">
-      <header class="flex flex-col items-center justify-center gap-5 my-10">
-        <h1
-          class="text-4xl font-bold tracking-tighter text-green-900 sm:text-5xl xl:text-6xl/none text-center w-full"
-        >
-          RosoJogja
-        </h1>
-        <p
-          class="max-w-[600px] text-green-800 md:text-xl w-full text-center block"
-        >
-          Temukan rasa yang pas di Jogja!
-        </p>
-      </header>
-    </div>
-  </section>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
 {% endblock content %}

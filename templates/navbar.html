@@ -1,113 +1,92 @@
 {% load static %}
-<nav
-  class="bg-white shadow-lg fixed top-0 left-0 z-40 w-screen font-['Poppins']"
->
-  <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
-      <div class="flex items-center">
-        <a href="{% url 'main:show_main' %}">
-          <h1 class="text-2xl font-bold text-center text-green-700">
-            RosoJogja
-          </h1>
-        </a>
-      </div>
-      <div class="hidden md:flex items-center max-h-full">
-        {% if user.is_authenticated %}
-        <div class="flex justify-center items-center px-2">
-          <img
-            src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
-            alt="User profile image"
-            class="object-cover h-10 w-10 rounded-full"
-          />
+<nav class="bg-white shadow-lg fixed top-0 left-0 z-40 w-screen font-['Poppins']">
+    <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex items-center">
+                <a href="{% url 'main:show_main' %}">
+                    <h1 class="text-2xl font-bold text-center text-green-700">RosoJogja</h1>
+                </a>
+            </div>
+            <div class="hidden md:flex items-center max-h-full">
+                <a href="{% url 'restaurant:show_restaurants' %}"
+                   class="block text-center font-bold py-2 px-4 transition duration-300">Restaurants</a>
+                {% if user.is_authenticated %}{% endif %}
+            </div>
+            <div class="hidden md:flex items-center max-h-full">
+                {% if user.is_authenticated %}
+                    <div class="flex justify-center items-center px-2">
+                        <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
+                             alt="User profile image"
+                             class="object-cover h-10 w-10 rounded-full" />
+                    </div>
+                    <span class="text-gray-800 mr-4">Welcome, {{ user.username }}</span>
+                    <a href="{% url 'main:logout' %}"
+                       class="text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                        Logout
+                    </a>
+                {% else %}
+                    <a href="{% url 'main:login' %}"
+                       class="text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 mr-2">
+                        Login
+                    </a>
+                    <a href="{% url 'main:register' %}"
+                       class="text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                        Register
+                    </a>
+                {% endif %}
+            </div>
+            <div class="md:hidden flex items-center">
+                <button class="mobile-menu-button">
+                    <svg class="w-6 h-6 text-green-800"
+                         fill="none"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
-        <span class="text-gray-800 mr-4">Welcome, {{ user.username }}</span>
-        <a
-          href="{% url 'main:logout' %}"
-          class="text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-        >
-          Logout
-        </a>
-        {% else %}
-        <a
-          href="{% url 'main:login' %}"
-          class="text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 mr-2"
-        >
-          Login
-        </a>
-        <a
-          href="{% url 'main:register' %}"
-          class="text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-        >
-          Register
-        </a>
-        {% endif %}
-      </div>
-      <div class="md:hidden flex items-center">
-        <button class="mobile-menu-button">
-          <svg
-            class="w-6 h-6 text-green-800"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-      </div>
     </div>
-  </div>
-  <!-- Mobile menu -->
-  <div class="mobile-menu hidden md:hidden px-4 w-full md:max-w-full">
-    <div class="pt-2 pb-3 space-y-1 mx-auto">
-      {% if user.is_authenticated %}
-      <div class="border-b-2 flex flex-row items-center justify-center py-2">
-        <div class="flex justify-center items-center px-2">
-          <img
-            src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
-            alt="User profile image"
-            class="object-cover h-10 w-10 rounded-full"
-          />
+    <!-- Mobile menu -->
+    <div class="mobile-menu hidden md:hidden px-4 w-full md:max-w-full">
+        <div class="pt-2 pb-3 space-y-1 mx-auto">
+            {% if user.is_authenticated %}
+                <div class="border-b-2 flex flex-row items-center justify-center py-2">
+                    <div class="flex justify-center items-center px-2">
+                        <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
+                             alt="User profile image"
+                             class="object-cover h-10 w-10 rounded-full" />
+                    </div>
+                    <span class="block text-green-800 px-3 py-2">Welcome, <b>{{ user.username }}</b>
+                    </span>
+                </div>
+                <a href="{% url 'restaurant:show_restaurants' %}"
+                   class="block text-center font-bold py-2 px-4 transition duration-300">Restaurants</a>
+                <a href="{% url 'main:logout' %}"
+                   class="block text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    Logout
+                </a>
+            {% else %}
+                <a href="{% url 'main:login' %}"
+                   class="block text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 mb-2">
+                    Login
+                </a>
+                <a href="{% url 'main:register' %}"
+                   class="block text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    Register
+                </a>
+            {% endif %}
         </div>
-        <span class="block text-green-800 px-3 py-2"
-          >Welcome, <b>{{ user.username }}</b>
-        </span>
-      </div>
-      <a
-        href="#"
-        class="block text-center font-bold py-2 px-4 transition duration-300"
-        >Restaurants</a
-      >
-      <a
-        href="{% url 'main:logout' %}"
-        class="block text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-      >
-        Logout
-      </a>
-      {% else %}
-      <a
-        href="{% url 'main:login' %}"
-        class="block text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 mb-2"
-      >
-        Login
-      </a>
-      <a
-        href="{% url 'main:register' %}"
-        class="block text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-      >
-        Register
-      </a>
-      {% endif %}
     </div>
-  </div>
-  <script>
+    <script>
     const btn = document.querySelector("button.mobile-menu-button");
     const menu = document.querySelector(".mobile-menu");
 
     btn.addEventListener("click", () => {
       menu.classList.toggle("hidden");
     });
-  </script>
+    </script>
 </nav>

@@ -22,7 +22,8 @@ class User(AbstractUser):
         upload_to="profile_pics/", blank=True, null=True
     )
 
-    class Meta(AbstractUser.Meta):
+    class Meta:
+        ordering = ["-date_joined"]
         swappable = "AUTH_USER_MODEL"
 
     def __str__(self):
