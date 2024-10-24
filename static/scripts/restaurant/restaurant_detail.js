@@ -65,10 +65,10 @@ async function refreshRestaurantDetail(id) {
           user_data.role === "C"
           ? `
           <div class="flex flex-row items-center justify-between gap-2"> 
-            <a href="/order/api/add_food_to_cart/${food.id}/"
+            <button id="addToCardBtn-${food.id}"
               class="bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 transition duration-300 shadow-md">
               Add To Cart
-            </a> 
+            </button> 
           </div>
           `
           :""
@@ -78,6 +78,12 @@ async function refreshRestaurantDetail(id) {
   });
 
   restaurantFoods.innerHTML = htmlString;
+  foods.forEach((food) => {
+  const addToCardBtn = document.getElementById(`addToCardBtn-${food.id}`);
+  addToCardBtn.addEventListener("click",async()=>{
+    await fetch(`/order/api/add_food_to_cart/${food.id}/`).then((response) => response.json());
+    })
+  })
 }
 
 const url = new URL(window.location.href);

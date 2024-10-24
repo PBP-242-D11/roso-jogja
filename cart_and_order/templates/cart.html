@@ -3,18 +3,21 @@
 {% block meta %}<title>Cart</title>{% endblock %}
 {% block content %}
     {% include 'navbar.html' %}
-    <h1>Cart for {{ cart.user.first_name }}</h1>
-
-    {% if foods %}
+    <section class="pt-20"> 
+    <h1>Cart for {{ username }}</h1>
+    <h3>Restaurant: {{ restaurant.name }}</h3>
+    
+    {% if cart_items %}
     <ul>
-        {% for food in foods %}
+        {% for item in cart_items %}
             <li>
-                {{ food.name }} - {{ food.price }}
+                {{ item.food.name }} - Price: {{ item.food.price }} - Quantity: {{ item.quantity }}
             </li>
         {% endfor %}
     </ul>
     <p>Total Price: {{ total_price }}</p>
-{% else %}
-    <p>Your cart is empty.</p>
-{% endif %}
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+    </section>
 {% endblock %}
