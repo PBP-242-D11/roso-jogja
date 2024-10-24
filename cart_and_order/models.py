@@ -24,3 +24,23 @@ class Cart(models.Model):
             self.foods.add(food)
         else:
             raise ValueError("All foods in the cart must be from the same restaurant.")
+
+class Order(models.Model):
+    PAYMENT_CHOICES = [
+        ('CREDIT', 'Credit Card'),
+        ('PAYPAL', 'PayPal'),
+        ('CASH', 'Cash on Delivery'),
+    ]
+
+    order_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    foods = models.ManyToManyField(Food)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    notes = models.TextField(null = True)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
+    total_price = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order {self.order_id} by {self.user.first_name}"
+
