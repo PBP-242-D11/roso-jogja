@@ -1,12 +1,11 @@
 import uuid
 from django.db import models
 from restaurant.models import Food, Restaurant
-from main.models import User
 from django.db.models import Sum
 
 class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    foods = models.ManyToManyField(Food, blank=True, null=True)
+    user = models.OneToOneField("main.User", on_delete=models.CASCADE, primary_key=True)
+    foods = models.ManyToManyField(Food, blank=True)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
@@ -33,7 +32,7 @@ class Order(models.Model):
     ]
 
     order_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey("main.User", on_delete=models.CASCADE)
     foods = models.ManyToManyField(Food)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     notes = models.TextField(null = True)
