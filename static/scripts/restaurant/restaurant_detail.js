@@ -61,6 +61,18 @@ async function refreshRestaurantDetail(id) {
           </div>
           <p>${food.price}</p>
         </div>
+        ${
+          user_data.role === "C"
+          ? `
+          <div class="flex flex-row items-center justify-between gap-2"> 
+            <a href="/order/api/add_food_to_cart/${food.id}/"
+              class="bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 transition duration-300 shadow-md">
+              Add To Cart
+            </a> 
+          </div>
+          `
+          :""
+        }
       </div>
     `;
   });
