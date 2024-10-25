@@ -14,6 +14,10 @@ class Cart(models.Model):
     def total_price(self):
         return sum(cart_item.price for cart_item in self.cart_items.all())
 
+    @property
+    def total_item(self):
+        return sum(cart_item.quantity for cart_item in self.cart_items.all())
+        
     def add_food(self, food, quantity=1):
         if not self.restaurant:
             self.restaurant = food.restaurant
