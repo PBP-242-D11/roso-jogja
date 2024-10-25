@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "main",
     "restaurant",
+    "promo",
+    "cart_and_order",
 ]
 
 MIDDLEWARE = [
