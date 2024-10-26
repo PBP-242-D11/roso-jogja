@@ -24,13 +24,34 @@
     
                     <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-2">
                         <span class="text-xl font-semibold" style="color: #333333;">Total:</span>
-                        <span id="cart-total" class="text-3xl font-bold" style="color: #FF7043;">Rp 0</span>
+                        <span id="cart-total" class="text-2xl font-bold" style="color: #FF7043;">Rp 0</span>
                     </div>
+
+                    <div class="hidden" id="promo-cutoff-row">
+                        <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-2">
+                            <span class="text-xl font-semibold" style="color: #333333;">Promo Cutoff:</span>
+                            <span id="promo-cutoff" class="text-xl font-semibold" style="color: #333333;">Rp 0</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-2">
+                            <span class="text-xl font-semibold" style="color: #333333;">Final Price:</span>
+                            <span id="final-price" class="text-2xl font-bold" style="color: #FF7043;">Rp 0</span>
+                        </div>
+                    </div>
+                    
                     
                     <div class="mb-4">
                         <label for="payment-method" class="block text-sm font-medium" style="color: #333333;">Restaurant:</label>
                         <span id="cart-restaurant" class="text-l font-semibold" style="color: #333333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
                     </div>
+
+                    <div class="mb-4">
+                        <button id="promo-button" class="font-semibold py-1 px-4 rounded-md" style="background-color: #FF7043; color: #FFFFFF;">
+                            Choose Promo
+                        </button>
+                        <div id="popup-message" style="display:none; color: red; font-weight: bold;">Please add items to your cart first.</div>
+                    </div>
+                    
 
                     <form id="order-form">
                         <div id="order-message" class="hidden mb-4" style="color: #FF7043;"></div>
@@ -57,17 +78,19 @@
     </div>
 
     <script>
+        let cartData = {};
         const cartItemsContainer = document.getElementById('cart-items-list');
         const cartTotalElement = document.getElementById('cart-total');
         const cartRestaurantElement = document.getElementById('cart-restaurant');
         const orderForm = document.getElementById('order-form');
         const clearCartBtn = document.getElementById('clear-cart-btn');
         const orderMessage = document.getElementById('order-message');
+        
 
         async function fetchCartItems() {
             try {
                 const response = await fetch('/order/api/cart/');
-                const cartData = await response.json();
+                cartData = await response.json();
                 const cartItems = cartData.items;
 
                 // Update restaurant name
@@ -162,7 +185,10 @@
         orderForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const notes = document.getElementById('notes').value;
+            let finalPrice = 0;
             const paymentMethod = document.getElementById('payment-method').value;
+            const promoId = document.cookie.replace(/(?:(?:^|.*;\s*)promo_id\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+            const currentTotal = parseFloat(document.getElementById('cart-total').textContent.replace("Rp ", ""));
 
             orderMessage.classList.add('hidden');
 
@@ -172,9 +198,35 @@
                 return;
             }
 
+            if (promoId) {
+                try {
+                    // Apply promo via an API endpoint
+                    const promoResponse = await fetch(`/promo/apply_promo/`, {
+                        method: "POST",
+                        body: JSON.stringify({ promo_id: promoId, payment: currentTotal, restaurant_id: `${cartData.restaurant.id}` }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const promoData = await promoResponse.json();
+
+                    if (promoResponse.ok && promoData.new_price) {
+                        finalPrice = promoData.new_price;
+                        document.getElementById('cart-total').textContent = `Rp ${finalPrice.toLocaleString()}`;
+                    } else {
+                        orderMessage.innerHTML = promoData.error_message || 'Failed to apply promo.';
+                        orderMessage.classList.remove('hidden');
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error applying promo:', error);
+                    orderMessage.innerHTML = 'An error occurred while applying the promo.';
+                    orderMessage.classList.remove('hidden');
+                    return;
+                }
+            }
             const data = {
                 notes: notes,
-                payment_method: paymentMethod
+                payment_method: paymentMethod,
+                final_price: finalPrice
             };
 
             try {
@@ -188,6 +240,8 @@
                     orderMessage.classList.add('text-green-500');
                     orderMessage.classList.remove('hidden');
                     fetchCartItems();
+                    document.cookie = "promo_id=; path=/; max-age=0;";
+                    document.getElementById('promo-cutoff-row').classList.add('hidden');
                 } else {
                     orderMessage.innerHTML = 'An error occurred while processing the order.';
                     orderMessage.classList.remove('hidden');
@@ -196,10 +250,69 @@
                 console.error('Error creating order:', error);
                 orderMessage.innerHTML = 'An error occurred while processing the order.';
                 orderMessage.classList.remove('hidden');
+
             }
         });
 
         clearCartBtn.addEventListener("click", clearCart);
         fetchCartItems();
+        document.addEventListener("DOMContentLoaded", function() {
+        // Function to fetch cart items and update button
+        async function fetchCartData() {
+            try {
+                const response = await fetch('/order/api/cart/');
+                const data = await response.json();
+                let finalPrice = 0;
+
+                const promoButton = document.getElementById("promo-button");
+                const popupMessage = document.getElementById("popup-message");
+                const promoId = document.cookie.replace(/(?:(?:^|.*;\s*)promo_id\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+                const currentTotal = parseFloat(document.getElementById('cart-total').textContent.replace("Rp ", ""));
+
+                promoButton.onclick = function() {
+                    if (data.restaurant && data.restaurant.id) {
+                        window.location.href = `/promo/use_promo/${data.restaurant.id}`;
+                    } else {
+                        popupMessage.style.display = 'block';
+                        popupMessage.innerText = "Please add items to your cart first.";
+                    }
+                };
+                if (promoId) {
+                    try {
+                        // Apply promo via an API endpoint
+                        const promoResponse = await fetch(`/promo/simulate_promo/`, {
+                            method: "POST",
+                            body: JSON.stringify({ promo_id: promoId, payment: currentTotal, restaurant_id: `${cartData.restaurant.id}` }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const promoData = await promoResponse.json();
+
+                        if (promoResponse.ok && promoData.new_price) {
+                            const discountAmount = currentTotal - promoData.new_price;
+                            finalPrice = promoData.new_price;
+                            document.getElementById('promo-cutoff-row').classList.remove('hidden');
+                            document.getElementById('promo-cutoff').textContent = `- Rp ${discountAmount}`;
+                            document.getElementById('final-price').textContent = `Rp ${finalPrice}`;
+                            document.getElementById('cart-total').textContent = `Rp ${currentTotal}`;
+                        } else {
+                            orderMessage.innerHTML = promoData.error_message || 'Failed to apply promo.';
+                            orderMessage.classList.remove('hidden');
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error applying promo:', error);
+                        orderMessage.innerHTML = 'An error occurred while applying the promo.';
+                        orderMessage.classList.remove('hidden');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching cart data:", error);
+            }
+        }
+
+        fetchCartData();
+    });
+
     </script>
 {% endblock %}

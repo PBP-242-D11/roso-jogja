@@ -58,6 +58,7 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    promo_cut = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
         return f"Order {self.order_id} by {self.user.first_name}"
@@ -75,7 +76,9 @@ class Order(models.Model):
         # Ensure the order has a primary key before calculating total price
         if not self.pk:
             super(Order, self).save(*args, **kwargs)  # Save to generate primary key
-        self.total_price = self.calculate_total_price  # Calculate total price
+        if self.total_price == 0:
+            self.total_price = self.calculate_total_price  # Calculate total price
+        self.promo_cut = self.calculate_total_price - self.total_price
         super(Order, self).save(update_fields=['total_price'])  # Save with updated total_price
 
 class OrderItem(models.Model):

@@ -1,24 +1,10 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
     {% include 'navbar.html' %}
     <div class="container mx-auto px-4 pt-24 py-6" style="background-color: #FFFFFF;">
-        <h1 class="text-xl font-bold mb-4" style="color: #333333; font-size: 1.25rem;">Order Summary</h1>
-
-        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-            <div style="flex: 1; margin-right: 0.5rem; padding: 1rem; border: 1px solid #E6E6E6; border-radius: 0.75rem; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);">
-                <p class="text-sm" style="color: #333333;">Total Orders</p>
-                <p class="text-lg font-bold" style="color: #3A1F02;">{{ total_orders }}</p>
-            </div>
-            <div style="flex: 1; margin-left: 0.5rem; padding: 1rem; border: 1px solid #E6E6E6; border-radius: 0.75rem; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);">
-                <p class="text-sm" style="color: #333333;">Total Spent</p>
-                <p class="text-lg font-bold" style="color: #FF7043;">Rp {{ total_spent }}</p>
-            </div>
-        </div>
-
-        <h1 class="text-xl font-bold mb-4 mt-8" style="color: #333333; font-size: 1.25rem;">Your Orders</h1>
-
+        <h1 class="text-xl font-bold mb-4" style="color: #333333; font-size: 1.25rem;">Your Orders</h1>
+        
         {% if orders %}
             <div class="space-y-3">
                 {% for order in orders %}
@@ -58,6 +44,10 @@
                                 </li>
                                 {% endfor %}
                             </ul>
+                            <p class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; margin-top: 0.5rem;">Total:</p>
+                            <p id="calculated-total-{{ order.id }}" class="text-sm" style="color: #333333; font-size: 0.75rem;">Rp {{ order.total_price }}</p>
+                            <p id="discount-{{ order.id }}" class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; ">Discount:</p>
+                            <p id="discount-amount-{{ order.id }}" class="text-sm" style="color: #333333; font-size: 0.75rem;">Rp {{ order.promo_cut }}</p>
                         {% else %}
                             <p style="color: #666666; font-size: 0.75rem;">No food items found.</p>
                         {% endif %}
@@ -66,10 +56,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem;">
-                <img src="{% static 'images/order_not_found.png' %}" alt="No Orders Found" style="max-width: 200px; margin-bottom: 1rem; opacity: 0.7;">
-                <p style="color: #666666; font-size: 0.875rem; text-align: center;">No orders found.</p>
-            </div>
+            <p style="color: #666666; font-size: 0.875rem;">No orders found.</p>
         {% endif %}
     </div>
 

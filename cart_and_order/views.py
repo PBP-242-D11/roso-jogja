@@ -25,9 +25,10 @@ def create_order(request):
         data = json.loads(request.body)
         notes = data.get("notes", "")
         payment_method = data.get("payment_method")
+        final_price = data.get("final_price", 0)
 
         if not payment_method:
-            return HttpResponse("Payment method is required", status=400)
+            return HttpResponse("Payment method is required", status=400) 
 
         # First create order without total_price
         order = Order.objects.create(
@@ -35,7 +36,8 @@ def create_order(request):
             restaurant=cart.restaurant,
             notes=notes,
             payment_method=payment_method,
-            total_price=0  # Set initial total_price as 0
+            total_price=final_price,  # Set initial total_price as final_price, if 0 then update in calculate price
+            promo_cut=0
         )
 
         # Create all order items
@@ -48,8 +50,16 @@ def create_order(request):
             )
         
         # Now update the order's total price manually after all items are created
-        order.total_price = order.calculate_total_price
+        if order.total_price == 0:
+            order.total_price = order.calculate_total_price
+        else:
+            print("satu", order.total_price)
+            print("dua", order.calculate_total_price)
+            order.promo_cut = float(order.calculate_total_price - order.total_price)
         order.save()
+        order.refresh_from_db() 
+        
+        print("ini", order.promo_cut)
 
         # Clear the cart after the order is created
         cart.cart_items.all().delete()
@@ -115,6 +125,7 @@ def get_cart_items(request):
         "total": cart.total_price,
         "restaurant": {
             "name": cart.restaurant.name if cart.restaurant else None,
+            "id":cart.restaurant.id if cart.restaurant else None,
         } if cart.restaurant else None,
         "items":[
                 {
@@ -174,14 +185,9 @@ def update_item_quantity(request, food_id):
 def show_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     
-    total_orders = orders.count()
-    total_spent = sum(order.total_price for order in orders)  
-
     context = {
         'orders': orders,
         'username': request.user.username,
-        'total_orders': total_orders,
-        'total_spent': total_spent,
     }
     return render(request, 'order_history.html', context)
 
