@@ -174,9 +174,14 @@ def update_item_quantity(request, food_id):
 def show_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     
+    total_orders = orders.count()
+    total_spent = sum(order.total_price for order in orders)  
+
     context = {
         'orders': orders,
         'username': request.user.username,
+        'total_orders': total_orders,
+        'total_spent': total_spent,
     }
     return render(request, 'order_history.html', context)
 
