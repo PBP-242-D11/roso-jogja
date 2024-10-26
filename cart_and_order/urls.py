@@ -7,7 +7,8 @@ from .views import (
     get_cart_items,
     show_cart,
     remove_item_from_cart,
-    update_item_quantity
+    update_item_quantity,
+    show_orders,
 )
 
 app_name = "order"
@@ -19,5 +20,6 @@ urlpatterns = [
     path("api/cart/", get_cart_items, name="get_cart_items"),
     path("show_cart/", show_cart, name="show_cart"),
     path("api/remove_item_from_cart/<uuid:food_id>/", remove_item_from_cart, name="remove_item_from_cart"),
-    path("api/update_item_quantity/<uuid:food_id>/", update_item_quantity, name='update_item_quantity')
+    path("api/update_item_quantity/<uuid:food_id>/", update_item_quantity, name='update_item_quantity'),
+    path('orders/', show_orders, name='show_order_history'),
 ]

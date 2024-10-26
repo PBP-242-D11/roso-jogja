@@ -10,6 +10,7 @@ import json
 
 from .models import Order, Cart, CartItem, Food, OrderItem
 
+
 @require_POST
 @csrf_exempt
 @login_required
@@ -18,31 +19,47 @@ def create_order(request):
     cart = request.user.get_or_create_cart
 
     if not cart.cart_items.exists():
-        return HttpResponse(b"Cart is empty", status=400)
+        return HttpResponse("Cart is empty", status=400)
 
-    order = Order.objects.create(
-        user=request.user,
-        restaurant=cart.restaurant,
-        notes=request.POST.get("notes"),
-        payment_method=request.POST.get("payment_method"),
-        total_price=cart.total_price  # total_price diambil dari cart
-    )
+    try:
+        data = json.loads(request.body)
+        notes = data.get("notes", "")
+        payment_method = data.get("payment_method")
 
-    # Buat OrderItem untuk setiap item di keranjang
-    for cart_item in cart.cart_items.all():
-        OrderItem.objects.create(
-            order=order,
-            food=cart_item.food,
-            quantity=cart_item.quantity,
-            price_at_order=cart_item.food.price  # harga saat order
+        if not payment_method:
+            return HttpResponse("Payment method is required", status=400)
+
+        # First create order without total_price
+        order = Order.objects.create(
+            user=request.user,
+            restaurant=cart.restaurant,
+            notes=notes,
+            payment_method=payment_method,
+            total_price=0  # Set initial total_price as 0
         )
 
-    # Kosongkan keranjang setelah order dibuat
-    cart.cart_items.all().delete()
-    cart.restaurant = None
-    cart.save()
+        # Create all order items
+        for cart_item in cart.cart_items.all():
+            OrderItem.objects.create(
+                order=order,
+                food=cart_item.food,
+                quantity=cart_item.quantity,
+                price_at_order=cart_item.food.price
+            )
+        
+        # Now update the order's total price manually after all items are created
+        order.total_price = order.calculate_total_price
+        order.save()
 
-    return HttpResponse(b"Order Created Successfully", status=201)
+        # Clear the cart after the order is created
+        cart.cart_items.all().delete()
+        cart.restaurant = None
+        cart.save()
+
+        return HttpResponse("Order Created Successfully", status=201)
+    except json.JSONDecodeError:
+        return HttpResponse("Invalid JSON data", status=400)
+
 
 
 @login_required
@@ -80,6 +97,7 @@ def show_cart(request):
     cart = request.user.get_or_create_cart
     cart_items = cart.cart_items.all()  # Ambil item-item dari keranjang
     total_price = cart.total_price  # Hitung total harga dari item-item di keranjang
+    
 
     context = {
         'cart_items': cart_items,  # Gunakan cart_items sebagai pengganti foods
@@ -95,7 +113,9 @@ def get_cart_items(request):
 
     items = {
         "total": cart.total_price,
-        # "restaurant" : cart.restaurant.name,
+        "restaurant": {
+            "name": cart.restaurant.name if cart.restaurant else None,
+        } if cart.restaurant else None,
         "items":[
                 {
                 'id': item.food.id,
@@ -148,3 +168,15 @@ def update_item_quantity(request, food_id):
         return HttpResponse("Item quantity updated successfully", status=200)
     except CartItem.DoesNotExist:
         return HttpResponse("Item not found in cart", status=404)
+    
+@login_required
+@role_required(['C'])
+def show_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'username': request.user.username,
+    }
+    return render(request, 'order_history.html', context)
+

@@ -1,106 +1,205 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block meta %}
-    <title>Keranjang Belanja</title>
+    <title>Shopping Cart</title>
 {% endblock %}
 
 {% block content %}
-    <div class="min-h-screen bg-light">
+    <div class="min-h-screen flex items-center justify-center" style="background-color: #FFFFFF;">
         {% include 'navbar.html' %}
 
-        <main class="container px-4 pt-24"> <!-- Margin atas diubah di sini -->
-            <h2 class="text-3xl font-bold mb-6">Keranjang Belanja</h2>
-            <div id="cart-items" class="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-                <!-- Item keranjang akan ditambahkan di sini -->
-            </div>
+        <main class="container px-4 pt-24 w-full max-w-5xl">
+            <h2 class="text-3xl font-bold mb-6" style="color: #333333;">Shopping Cart</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="cart-items" class="rounded-lg shadow-sm overflow-hidden mb-8" style="background-color: #F5F5F5;">
+                    <div class="flex justify-between items-center p-4">
+                        <h3 class="text-lg font-semibold" style="color: #333333;">Order List</h3>
+                        <button id="clear-cart-btn" class="font-semibold py-1 px-4 rounded-md hover:bg-opacity-90 hidden" style="background-color: #FF7043; color: #FFFFFF;">Clear Cart</button>
+                    </div>
+                    <div id="cart-items-list" class="flex flex-col items-center p-4"></div>
+                </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-xl font-semibold">Total:</span>
-                    <span id="cart-total" class="text-2xl font-bold">Rp 0</span>
+                <div class="rounded-lg shadow-sm p-6" style="background-color: #F5F5F5;">
+                    <h3 class="text-lg font-semibold mb-4" style="color: #333333;">Order Details</h3>
+    
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-2">
+                        <span class="text-xl font-semibold" style="color: #333333;">Total:</span>
+                        <span id="cart-total" class="text-3xl font-bold" style="color: #FF7043;">Rp 0</span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="payment-method" class="block text-sm font-medium" style="color: #333333;">Restaurant:</label>
+                        <span id="cart-restaurant" class="text-l font-semibold" style="color: #333333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
+                    </div>
+
+                    <form id="order-form">
+                        <div id="order-message" class="hidden mb-4" style="color: #FF7043;"></div>
+                        <div class="mb-4">
+                            <label for="notes" class="block text-sm font-medium" style="color: #333333;">Notes:</label>
+                            <textarea id="notes" name="notes" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50" placeholder="Write additional notes here..." style="border-color: #DDDDDD;"></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="payment-method" class="block text-sm font-medium" style="color: #333333;">Payment Method:</label>
+                            <select id="payment-method" name="payment_method" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50" style="border-color: #DDDDDD;">
+                                <option value="SELECT">Select Payment Method</option>
+                                <option value="CASH">Cash on Delivery</option>
+                                <option value="CREDIT">Credit Card</option>
+                                <option value="PAYPAL">PayPal</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" id="order-button" class="w-full font-semibold py-2 rounded-md hover:bg-opacity-90" style="background-color: #FF7043; color: #FFFFFF;">Order Now</button>
+                    </form>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        const cartItemsContainer = document.getElementById('cart-items');
+        const cartItemsContainer = document.getElementById('cart-items-list');
         const cartTotalElement = document.getElementById('cart-total');
+        const cartRestaurantElement = document.getElementById('cart-restaurant');
+        const orderForm = document.getElementById('order-form');
+        const clearCartBtn = document.getElementById('clear-cart-btn');
+        const orderMessage = document.getElementById('order-message');
 
         async function fetchCartItems() {
             try {
-                const response = await fetch('/order/api/cart/'); // Ganti dengan URL endpoint untuk mendapatkan item keranjang
-                const cartData = await response.json()
+                const response = await fetch('/order/api/cart/');
+                const cartData = await response.json();
                 const cartItems = cartData.items;
-                console.log(cartData)
+
+                // Update restaurant name
+                cartRestaurantElement.textContent = cartData.restaurant_name || '-';
 
                 if (cartItems.length === 0) {
-                    cartItemsContainer.innerHTML = '<p class="text-xl text-center">Keranjang Anda kosong.</p>';
+                    cartItemsContainer.innerHTML = `
+                        <div class="text-center">
+                            <img src="{% static 'images/empty_cart_new.png' %}" alt="Empty Cart" class="w-48 h-35 mb-4 mt-8 mx-auto">
+                            <p class="text-l font-semibold" style="color: #333333;">Your cart is empty.</p>
+                        </div>
+                    `;
                     cartTotalElement.innerHTML = `Rp 0.00`;
+                    clearCartBtn.classList.add("hidden");
+                    cartRestaurantElement.textContent = '-';
                 } else {
-                    cartItemsContainer.innerHTML = ''; // Kosongkan container
+                    cartItemsContainer.innerHTML = '';
+                    clearCartBtn.classList.remove("hidden");
 
                     cartItems.forEach(item => {
-
                         const itemElement = document.createElement('div');
-                        itemElement.className = 'flex items-center border-b border-gray-200 py-4 px-6';
+                        itemElement.className = 'flex items-center border-b border-gray-200 py-4 px-6 w-full';
                         itemElement.innerHTML = `
                             <div class="flex-grow">
-                                <h3 class="text-lg font-semibold">${item.name}</h3>
-                                <p>Rp ${item.price.toLocaleString()}</p>
+                                <h3 class="text-lg font-semibold" style="color: #333333;">${item.name}</h3>
+                                <p style="color: #FF7043;">Rp ${item.price.toLocaleString()}</p>
                             </div>
                             <div class="flex items-center">
-                                <button id="decreaseQuantityBtn${item.id}" class="bg-black text-white w-6 h-6 text-sm rounded-full flex items-center justify-center mr-2">-</button>
+                                <button id="decreaseQuantityBtn${item.id}" class="w-6 h-6 text-sm rounded-full flex items-center justify-center mr-2" style="background-color: #FF7043; color: #FFFFFF;">-</button>
                                 <span class="mx-2 w-6 text-center">${item.quantity}</span>
-                                <button id="increaseQuantityBtn${item.id}" class="bg-black text-white w-6 h-6 text-sm rounded-full flex items-center justify-center ml-2">+</button>
+                                <button id="increaseQuantityBtn${item.id}" class="w-6 h-6 text-sm rounded-full flex items-center justify-center ml-2" style="background-color: #FF7043; color: #FFFFFF;">+</button>
                             </div>
-                            <button id="removeItemBtn${item.id}" class="ml-4 text-red-500">Hapus</button>
+                            <button id="removeItemBtn${item.id}" class="ml-4 rounded-full p-2 hover:bg-opacity-90 flex items-center" style="background-color: #333333; color: #FFFFFF;">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         `;
                         cartItemsContainer.appendChild(itemElement);
-                        const decreaseQuantityBtn = document.getElementById(`decreaseQuantityBtn${item.id}`)
-                        const increaseQuantityBtn = document.getElementById(`increaseQuantityBtn${item.id}`)
-                        const removeItemBtn = document.getElementById(`removeItemBtn${item.id}`)
+                        const decreaseQuantityBtn = document.getElementById(`decreaseQuantityBtn${item.id}`);
+                        const increaseQuantityBtn = document.getElementById(`increaseQuantityBtn${item.id}`);
+                        const removeItemBtn = document.getElementById(`removeItemBtn${item.id}`);
 
-                        decreaseQuantityBtn.addEventListener("click", () =>{
-                            updateQuantity(item.id, item.quantity - 1)
-                        })
+                        decreaseQuantityBtn.addEventListener("click", () => {
+                            updateQuantity(item.id, item.quantity - 1);
+                        });
 
-                        increaseQuantityBtn.addEventListener("click", () =>{
-                            updateQuantity(item.id, item.quantity + 1)
-                        })
+                        increaseQuantityBtn.addEventListener("click", () => {
+                            updateQuantity(item.id, item.quantity + 1);
+                        });
 
-                        removeItemBtn.addEventListener("click", () =>{
-                            updateQuantity(item.id, 0)
-                        })
+                        removeItemBtn.addEventListener("click", () => {
+                            updateQuantity(item.id, 0);
+                        });
                     });
 
-                    cartTotalElement.innerHTML = `Rp ${cartData.total}`;
+                    cartTotalElement.innerHTML = `Rp ${cartData.total.toLocaleString()}`;
+                    cartRestaurantElement.textContent = `${cartData.restaurant.name}`;
                 }
             } catch (error) {
                 console.error('Error fetching cart items:', error);
+                cartRestaurantElement.textContent = '-';
             }
         }
 
-        updateQuantity = async (itemId, newQuantity) => {
-            if (newQuantity < 0) {
-                return
-            } else {
-                const data = {
-                    quantity: newQuantity
+        async function clearCart() {
+            try {
+                const response = await fetch('/order/api/clear_cart/', { method: "DELETE" });
+                if (response.ok) {
+                    fetchCartItems();
                 }
-                try {
-                    const response = await fetch(`/order/api/update_item_quantity/${itemId}/`, {
-                        method:"PATCH", 
-                        body: JSON.stringify(data)
-                    });
-                    if (response.status === 200) {
-                        fetchCartItems(); // Memperbarui tampilan setelah berhasil
-                    }
-                } catch (error) {
-                    console.error('Error updating quantity:', error);
+            } catch (error) {
+                console.error('Error clearing cart:', error);
+            }
+        }
+
+        async function updateQuantity(itemId, newQuantity) {
+            if (newQuantity < 0) return;
+
+            const data = { quantity: newQuantity };
+            try {
+                const response = await fetch(`/order/api/update_item_quantity/${itemId}/`, {
+                    method: "PATCH",
+                    body: JSON.stringify(data),
+                });
+                if (response.status === 200) {
+                    fetchCartItems();
                 }
+            } catch (error) {
+                console.error('Error updating quantity:', error);
             }
         };
+
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const notes = document.getElementById('notes').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+
+            orderMessage.classList.add('hidden');
+
+            if (paymentMethod === 'SELECT') {
+                orderMessage.innerHTML = 'Order data is incomplete. Please select a payment method.';
+                orderMessage.classList.remove('hidden');
+                return;
+            }
+
+            const data = {
+                notes: notes,
+                payment_method: paymentMethod
+            };
+
+            try {
+                const response = await fetch('/order/api/create_order/', {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    orderMessage.innerHTML = 'Order placed successfully!';
+                    orderMessage.classList.add('text-green-500');
+                    orderMessage.classList.remove('hidden');
+                    fetchCartItems();
+                } else {
+                    orderMessage.innerHTML = 'An error occurred while processing the order.';
+                    orderMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error creating order:', error);
+                orderMessage.innerHTML = 'An error occurred while processing the order.';
+                orderMessage.classList.remove('hidden');
+            }
+        });
+
+        clearCartBtn.addEventListener("click", clearCart);
         fetchCartItems();
     </script>
 {% endblock %}
