@@ -29,7 +29,6 @@ class Promo(models.Model):
     def __str__(self):
         return f'{self.type} - {self.promo_code}'
     
-    @property
     def use_promo(self, payment, restaurant_id):
         if self.expiry_date and (date.today() > self.expiry_date):
             return -3  # State: promo expired
@@ -45,5 +44,21 @@ class Promo(models.Model):
                 return payment*(100-self.value)/100 # State: promo yang dipakai persentase
             elif self.type == "Fixed Price":
                 self.max_usage-=1
+                return payment-self.value # State: promo yang dipakai fixed price
+        return -2 # Unknown error
+    
+    def simulate_promo(self, payment, restaurant_id):
+        if self.expiry_date and (date.today() > self.expiry_date):
+            return -3  # State: promo expired
+        if not self.restaurant.filter(id=restaurant_id).exists():
+            return -4  # State: invalid restaurant 
+        if (payment<self.min_payment):
+            return -1 # State: payment gacukup untuk pakai promo
+        if (self.max_usage==0):
+            return 0 # State: voucher habis
+        else: # State: untuk voucher available
+            if self.type == "Percentage":
+                return payment*(100-self.value)/100 # State: promo yang dipakai persentase
+            elif self.type == "Fixed Price":
                 return payment-self.value # State: promo yang dipakai fixed price
         return -2 # Unknown error

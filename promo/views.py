@@ -1,11 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from promo.models import Promo
 from restaurant.models import Restaurant
 from cart_and_order.models import Cart
 from django.urls import reverse
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from promo.forms import PromoForm
 import uuid
+import json
 from datetime import date
 from django.http import JsonResponse
 from common.decorators import role_required
@@ -149,3 +152,66 @@ def promo_details(request, promo_id):
         return JsonResponse(data)
     except Promo.DoesNotExist:
         return JsonResponse({'error': 'Promo not found'}, status=404)
+    
+@require_POST
+@login_required
+@csrf_exempt
+def apply_promo(request):
+    data = json.loads(request.body)
+    promo_id = data.get("promo_id")
+    payment = data.get("payment")
+    restaurant_id = data.get("restaurant_id")
+
+    try:
+        promo = Promo.objects.get(id=promo_id)
+        
+        # Call `use_promo` with the required arguments
+        new_price = promo.use_promo(payment, restaurant_id)
+
+        if new_price < 0:
+            error_messages = {
+                -3: "Promo expired",
+                -4: "Invalid restaurant",
+                -1: "Minimum payment not met",
+                0: "Promo usage limit reached",
+                -2: "Unknown error"
+            }
+            return JsonResponse({"error_message": error_messages.get(new_price, "Promo error")}, status=400)
+
+        return JsonResponse({"new_price": new_price}, status=200)
+    except Promo.DoesNotExist:
+        return JsonResponse({"error_message": "Promo not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error_message": str(e)}, status=500)
+
+@require_POST
+@login_required
+@csrf_exempt
+def simulate_promo(request):
+    data = json.loads(request.body)
+    promo_id = data.get("promo_id")
+    payment = data.get("payment")
+    restaurant_id = data.get("restaurant_id")
+
+    try:
+        promo = Promo.objects.get(id=promo_id)
+        
+        # Call `use_promo` with the required arguments
+        new_price = promo.simulate_promo(payment, restaurant_id)
+
+        if new_price < 0:
+            error_messages = {
+                -3: "Promo expired",
+                -4: "Invalid restaurant",
+                -1: "Minimum payment not met",
+                0: "Promo usage limit reached",
+                -2: "Unknown error"
+            }
+            return JsonResponse({"error_message": error_messages.get(new_price, "Promo error")}, status=400)
+
+        return JsonResponse({"new_price": new_price}, status=200)
+    except Promo.DoesNotExist:
+        return JsonResponse({"error_message": "Promo not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error_message": str(e)}, status=500)
+
