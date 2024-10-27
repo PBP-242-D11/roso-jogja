@@ -207,10 +207,12 @@ function updateStarRating(rating) {
 async function submitReview() {
   const rating = document.getElementById("review-rating").value;
   const comment = document.getElementById("review-comment").value;
+  const csrfToken = document.getElementById("restaurant-reviews").getAttribute("data-csrf-token");
   const response = await fetch(`/reviews/api/add_review/${id}/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": csrfToken,
     },
     body: `rating=${rating}&comment=${comment}`
   });

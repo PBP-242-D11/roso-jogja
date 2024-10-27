@@ -11,10 +11,6 @@ from django.views.decorators.http import require_http_methods
 from cart_and_order.models import Order 
 
 
-@csrf_exempt
-@login_required
-@require_POST
-@csrf_exempt
 @login_required
 @require_POST
 def add_review(request, restaurant_id):
@@ -66,7 +62,6 @@ def get_review(request, restaurant_id):
     ]
     return JsonResponse({"reviews": reviews_data})
 
-@csrf_exempt
 def delete_review(request, review_id):
     if request.method == "DELETE":
         review = get_object_or_404(Review, id=review_id)
