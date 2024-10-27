@@ -1,9 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from common.decorators import role_required
@@ -17,6 +17,7 @@ from .models import Restaurant
 def restaurant_list(request):
     page_number = request.GET.get("page", 1)
     page_size = request.GET.get("page_size", 10)
+    search = request.GET.get("search", None)
 
     try:
         page_size = int(page_size)
@@ -24,7 +25,12 @@ def restaurant_list(request):
     except ValueError:
         page_size = 10
 
-    restaurants = Restaurant.objects.all()
+    if search is None or search == "":
+        restaurants = Restaurant.objects.all()
+    else:
+        restaurants = Restaurant.objects.filter(
+            Q(name__icontains=search) | Q(categories__icontains=search)
+        )
     if (request.user.is_authenticated) and (request.user.role == "R"):
         restaurants = restaurants.filter(owner=request.user)
 
