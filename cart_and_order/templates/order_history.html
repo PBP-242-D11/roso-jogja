@@ -44,10 +44,10 @@
                                 </li>
                                 {% endfor %}
                             </ul>
-                            <p class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; margin-top: 0.5rem;">Total:</p>
-                            <p id="calculated-total-{{ order.id }}" class="text-sm" style="color: #333333; font-size: 0.75rem;">Rp {{ order.total_price }}</p>
                             <p id="discount-{{ order.id }}" class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; ">Discount:</p>
                             <p id="discount-amount-{{ order.id }}" class="text-sm" style="color: #333333; font-size: 0.75rem;">Rp {{ order.promo_cut }}</p>
+                            <p class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; margin-top: 0.5rem;">Total:</p>
+                            <p id="calculated-total-{{ order.id }}" class="text-sm" style="color: #333333; font-size: 0.75rem;">Rp {{ order.total_price }}</p>
                         {% else %}
                             <p style="color: #666666; font-size: 0.75rem;">No food items found.</p>
                         {% endif %}
