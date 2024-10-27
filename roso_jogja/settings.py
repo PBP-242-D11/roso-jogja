@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "django_browser_reload",
     "main",
     "restaurant",
+    "cart_and_order",
+    "promo",
 ]
 
 MIDDLEWARE = [

@@ -25,6 +25,8 @@ urlpatterns = [
     path("", include("main.urls")),
     path("restaurant/", include("restaurant.urls")),
     path("__reload__/", include("django_browser_reload.urls")),
+    path("order/", include("cart_and_order.urls")),
+    path("promo/", include("promo.urls")),
 ]
 
 if settings.DEBUG:

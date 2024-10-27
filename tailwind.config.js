@@ -11,7 +11,11 @@ const config = {
     "./**/static/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        test: "#FF7043",
+      },
+    },
   },
   plugins: [],
 };
