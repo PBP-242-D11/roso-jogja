@@ -35,18 +35,26 @@ def promo_home(request):
 @login_required
 @role_required(allowed_roles=["C"])
 def use_promo(request, restaurant_id):
+    other_promos = ""
     # Uncomment kalo udah fully implement cart and order
-    # cart = get_object_or_404(Cart, user=request.user) # Asumsinya ngambil data order dari cart
-    # total_price = cart.total_price
-    # promos = Promo.objects.filter(
-    #     shown_to_public=True,
-    #     min_payment__lte=total_price,
-    #     expiry_date__gte=date.today(),
-    #     restaurant=restaurant_id,
-    # ).exclude(max_usage=0)
-    promos = Promo.objects.filter(shown_to_public=True,
+    cart = get_object_or_404(Cart, user=request.user) # Asumsinya ngambil data order dari cart
+    total_price = float(cart.total_price)
+    print(total_price)
+    promos = Promo.objects.filter(
+        shown_to_public=True,
+        min_payment__lte=total_price,
         expiry_date__gte=date.today(),
-        restaurant=restaurant_id).exclude(max_usage=0)
+        restaurant=restaurant_id,
+    ).exclude(max_usage=0)
+    other_promos = Promo.objects.filter(
+        shown_to_public=True,
+        min_payment__gt=total_price,
+        expiry_date__gte=date.today(),
+        restaurant=restaurant_id,
+    ).exclude(max_usage=0)
+    # promos = Promo.objects.filter(shown_to_public=True,
+    #     expiry_date__gte=date.today(),
+    #     restaurant=restaurant_id).exclude(max_usage=0)
     if request.method == 'POST':
         promo_code = request.POST.get('promo_code')
         promo_id = request.POST.get('promo_id')
@@ -64,6 +72,7 @@ def use_promo(request, restaurant_id):
     
     context = {
         'promos': promos,
+        'other_promos': other_promos,
         'message': 'No promos available' if not promos else '',
         'restaurant_id': restaurant_id
     }
@@ -165,7 +174,6 @@ def apply_promo(request):
     try:
         promo = Promo.objects.get(id=promo_id)
         
-        # Call `use_promo` with the required arguments
         new_price = promo.use_promo(payment, restaurant_id)
 
         if new_price < 0:
@@ -178,7 +186,7 @@ def apply_promo(request):
             }
             return JsonResponse({"error_message": error_messages.get(new_price, "Promo error")}, status=400)
 
-        return JsonResponse({"new_price": new_price}, status=200)
+        return JsonResponse({"new_price": new_price, "promo_value": promo.value, "promo_type": promo.type}, status=200)
     except Promo.DoesNotExist:
         return JsonResponse({"error_message": "Promo not found"}, status=404)
     except Exception as e:
@@ -196,7 +204,6 @@ def simulate_promo(request):
     try:
         promo = Promo.objects.get(id=promo_id)
         
-        # Call `use_promo` with the required arguments
         new_price = promo.simulate_promo(payment, restaurant_id)
 
         if new_price < 0:
@@ -209,9 +216,8 @@ def simulate_promo(request):
             }
             return JsonResponse({"error_message": error_messages.get(new_price, "Promo error")}, status=400)
 
-        return JsonResponse({"new_price": new_price}, status=200)
+        return JsonResponse({"new_price": new_price, "promo_value": promo.value, "promo_type": promo.type}, status=200)
     except Promo.DoesNotExist:
         return JsonResponse({"error_message": "Promo not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error_message": str(e)}, status=500)
-

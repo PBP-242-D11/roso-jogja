@@ -34,7 +34,9 @@
                         </div>
                         <!-- Dropdown Menu -->
                         <div id="dropdown-menu" class="hidden absolute top-12 right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+                            {% if user.role == 'C'%}
                             <a href="{% url 'order:show_order_history' %}" class="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Order History</a>
+                            {% endif %}
                             <a href="{% url 'main:logout' %}" class="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Logout</a>
                         </div>
                     </div>

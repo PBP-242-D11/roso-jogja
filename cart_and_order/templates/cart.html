@@ -37,6 +37,7 @@
                             <span class="text-xl font-semibold" style="color: #333333;">Final Price:</span>
                             <span id="final-price" class="text-2xl font-bold" style="color: #FF7043;">Rp 0</span>
                         </div>
+                        <p id="promo-message" class="text-sm" style="color: #FF7043; font-weight: bold;"></p><br>
                     </div>
                     
                     
@@ -49,7 +50,7 @@
                         <button id="promo-button" class="font-semibold py-1 px-4 rounded-md" style="background-color: #FF7043; color: #FFFFFF;">
                             Choose Promo
                         </button>
-                        <div id="popup-message" style="display:none; color: red; font-weight: bold;">Please add items to your cart first.</div>
+                        <div id="popup-message" style="display:none; color : #FF7043 ;">Please add items to your cart first.</div>
                     </div>
                     
 
@@ -210,7 +211,20 @@
 
                     if (promoResponse.ok && promoData.new_price) {
                         finalPrice = promoData.new_price;
+                        promoValue = promoData.promo_value;
+                        promoType = promoData.promo_type;
                         document.getElementById('cart-total').textContent = `Rp ${finalPrice.toLocaleString()}`;
+
+                        const promoDetails = document.getElementById('promo-details');
+                        const promoMessage = document.getElementById('promo-message');
+
+                        if (promoType === 'Percentage') {
+                            promoMessage.textContent = `Promo Applied: ${promoValue}% off`;
+                        } else if (promoType === 'Fixed Price') {
+                            promoMessage.textContent = `Promo Applied: Rp ${promoValue.toLocaleString()} off`;
+                        } else {
+                            promoMessage.textContent = `Promo Applied: Custom Discount`;
+                        }
                     } else {
                         orderMessage.innerHTML = promoData.error_message || 'Failed to apply promo.';
                         orderMessage.classList.remove('hidden');
@@ -218,7 +232,7 @@
                     }
                 } catch (error) {
                     console.error('Error applying promo:', error);
-                    orderMessage.innerHTML = 'An error occurred while applying the promo.';
+                    //orderMessage.innerHTML = 'An error occurred while applying the promo.';
                     orderMessage.classList.remove('hidden');
                     return;
                 }
@@ -294,6 +308,19 @@
                             document.getElementById('promo-cutoff').textContent = `- Rp ${discountAmount}`;
                             document.getElementById('final-price').textContent = `Rp ${finalPrice}`;
                             document.getElementById('cart-total').textContent = `Rp ${currentTotal}`;
+
+                            promoValue = promoData.promo_value;
+                            promoType = promoData.promo_type;
+                            const promoDetails = document.getElementById('promo-details');
+                            const promoMessage = document.getElementById('promo-message');
+                            if (promoType === 'Percentage') {
+                                promoMessage.textContent = `Promo Applied: ${promoValue}% off`;
+                            } else if (promoType === 'Fixed Price') {
+                                promoMessage.textContent = `Promo Applied: Rp ${promoValue} off`;
+                            } else {
+                                promoMessage.textContent = `Promo Applied: Custom Discount`;
+                            }
+
                         } else {
                             orderMessage.innerHTML = promoData.error_message || 'Failed to apply promo.';
                             orderMessage.classList.remove('hidden');
@@ -301,7 +328,7 @@
                         }
                     } catch (error) {
                         console.error('Error applying promo:', error);
-                        orderMessage.innerHTML = 'An error occurred while applying the promo.';
+                        //orderMessage.innerHTML = 'An error occurred while applying the promo.';
                         orderMessage.classList.remove('hidden');
                         return;
                     }
