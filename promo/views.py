@@ -59,8 +59,8 @@ def use_promo(request, restaurant_id):
         promo_code = request.POST.get('promo_code')
         promo_id = request.POST.get('promo_id')
         try:
-            promo = Promo.objects.filter(promo_code=promo_code).first()
-            if promo.min_payment > total_price:
+            promo = Promo.objects.filter(promo_code=promo_code, restaurant=restaurant_id).first()
+            if promo.min_payment > total_price or promo.expiry_date < date.today():
                 promo=""
                 return JsonResponse({'status': 'error', 'message': "Requirements not met to use this promo."})
             if not promo and promo_id:
