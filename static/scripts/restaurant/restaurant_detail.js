@@ -71,6 +71,7 @@ async function refreshRestaurantDetail(id) {
       </div>
     `;
   });
+  fetchAndDisplayReviews(id, user_data)
 
   restaurantFoods.innerHTML = htmlString;
 
@@ -84,6 +85,199 @@ async function refreshRestaurantDetail(id) {
       });
     }
   });
+
+  if (user_data.role === "C") {
+    const addReviewButton = document.createElement("button");
+    addReviewButton.classList.add("bg-green-600", "text-white", "hover:bg-green-700", "px-4", "py-2", "rounded-md", "font-medium", "mt-6");
+    addReviewButton.innerText = "Add Review";
+    addReviewButton.addEventListener("click", showReviewModal);
+  
+    const reviewContainer = document.getElementById("reviews-container");
+    reviewContainer.style.display = "flex";
+    reviewContainer.style.flexDirection = "column";
+    reviewContainer.style.alignItems = "center";
+    reviewContainer.appendChild(addReviewButton);
+  }
+}
+
+async function fetchAndDisplayReviews(id, user_data) {
+  const response = await fetch(`/reviews/api/get_reviews/${id}/`);
+  const data = await response.json();
+  const reviewContainer = document.getElementById("reviews-container");
+
+  // Hapus teks "no reviews" jika ada review yang ditampilkan
+  const noReviewsText = document.getElementById("no-reviews-text");
+  if (data.reviews.length > 0 && noReviewsText) {
+    noReviewsText.remove();
+  }
+
+  if (data.reviews.length === 0) {
+    return;
+  } else {
+    data.reviews.forEach(review => {
+      const reviewElement = document.createElement("div");
+      reviewElement.classList.add("bg-gray-100", "p-4", "rounded", "mt-4", "relative");
+      // Format tampilan review dengan ikon bintang
+      let starsHtml = `<span class="inline-flex items-center align-middle gap-x-0	">`; 
+      for (let i = 1; i <= 5; i++) {
+        starsHtml += `
+          <svg class="w-5 h-5 ${i <= review.rating ? 'text-yellow-500' : 'text-gray-400'}" 
+               style="vertical-align: middle;" 
+               xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M11.049 2.927a1 1 0 011.902 0l1.885 3.82a1 1 0 00.756.545l4.2.61a1 1 0 01.564 1.706l-3.04 2.968a1 1 0 00-.287.885l.718 4.179a1 1 0 01-1.451 1.054L12 17.347l-3.755 1.973a1 1 0 01-1.451-1.054l.718-4.179a1 1 0 00-.287-.885l-3.04-2.968a1 1 0 01.564-1.706l4.2-.61a1 1 0 00.756-.545l1.885-3.82z" />
+          </svg>`;
+      }
+      starsHtml += `</span>`;
+
+      reviewElement.innerHTML = `
+        <p><strong>${review.user}</strong> rated: ${starsHtml}</p>
+        <p>${review.comment}</p>
+        <p class="text-sm text-gray-500">${review.created_at}</p>
+      `;
+
+      // Tambahkan tombol delete jika user adalah admin
+      if (user_data.role === "A") {
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("absolute", "top-0", "right-0", "bg-red-600", "hover:bg-red-700", "text-white", "w-6", "h-6", "flex", "items-center", "justify-center", "rounded", "shadow-lg");
+        deleteButton.innerHTML = `<span class="text-lg font-semibold">X</span>`;
+        deleteButton.onclick = () => deleteReview(review.id, reviewElement);
+        reviewElement.appendChild(deleteButton);
+      }
+      reviewContainer.appendChild(reviewElement);
+    });
+  }
+}
+
+
+// Fungsi untuk menampilkan modal review
+function showReviewModal() {
+  const modalContent = `
+    <div class="relative p-6">
+      <button onclick="hideModal()" 
+              class="absolute top-0 right-0 -mt-4 -mr-4 bg-red-600 text-white w-8 h-8 flex items-center justify-center rounded shadow-lg">
+        <span class="text-lg font-semibold">X</span>
+      </button>
+
+      <div class="flex flex-col gap-4 mt-4">
+        <label class="flex items-center">Rating: <!-- Align teks dan bintang dalam satu baris -->
+          <div id="star-rating" class="flex gap-x-0 ml-2"> <!-- Mengatur gap kecil dan inline -->
+            ${[...Array(5)].map((_, i) => `
+              <svg class="star w-5 h-5 cursor-pointer text-gray-400 inline-block align-middle" data-value="${i + 1}" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M11.049 2.927a1 1 0 011.902 0l1.885 3.82a1 1 0 00.756.545l4.2.61a1 1 0 01.564 1.706l-3.04 2.968a1 1 0 00-.287.885l.718 4.179a1 1 0 01-1.451 1.054L12 17.347l-3.755 1.973a1 1 0 01-1.451-1.054l.718-4.179a1 1 0 00-.287-.885l-3.04-2.968a1 1 0 01.564-1.706l4.2-.61a1 1 0 00.756-.545l1.885-3.82z" />
+              </svg>
+            `).join('')}
+          </div>
+        </label>
+        <input type="hidden" id="review-rating" value="0">
+        <label>Comment: <textarea id="review-comment" class="border rounded px-2 py-1 w-full"></textarea></label>
+        <div class="flex justify-end mt-4">
+          <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="submitReview()">Submit Review</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById("crudModalContent").innerHTML = modalContent;
+  showModal();
+
+  const stars = document.querySelectorAll("#star-rating .star");
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      const rating = star.getAttribute("data-value");
+      document.getElementById("review-rating").value = rating;
+      updateStarRating(rating);
+    });
+  });
+}
+
+// Fungsi untuk memperbarui tampilan bintang berdasarkan rating yang dipilih
+function updateStarRating(rating) {
+  const stars = document.querySelectorAll("#star-rating .star");
+  stars.forEach(star => {
+    const starValue = star.getAttribute("data-value");
+    if (starValue <= rating) {
+      star.classList.add("text-yellow-500");
+      star.classList.remove("text-gray-400");
+    } else {
+      star.classList.add("text-gray-400");
+      star.classList.remove("text-yellow-500");
+    }
+  });
+}
+
+
+// Fungsi untuk mengirim review melalui API
+async function submitReview() {
+  const rating = document.getElementById("review-rating").value;
+  const comment = document.getElementById("review-comment").value;
+  const csrfToken = document.getElementById("restaurant-reviews").getAttribute("data-csrf-token");
+  const response = await fetch(`/reviews/api/add_review/${id}/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": csrfToken,
+    },
+    body: `rating=${rating}&comment=${comment}`
+  });
+
+  const data = await response.json();
+  if (data.success) {
+    hideModal();
+    const noReviewsText = document.getElementById("no-reviews-text");
+    if (noReviewsText) {
+      noReviewsText.remove();
+    }
+    const reviewContainer = document.getElementById("reviews-container");
+    const reviewElement = document.createElement("div");
+    reviewElement.classList.add("bg-gray-100", "p-4", "rounded", "mt-4");
+
+    let starsHtml = `<span class="inline-flex items-center align-middle gap-x-0">`; 
+    for (let i = 1; i <= 5; i++) {
+      starsHtml += `
+        <svg class="w-5 h-5 ${i <= data.review.rating ? 'text-yellow-500' : 'text-gray-400'}" 
+             style="vertical-align: middle;" 
+             xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M11.049 2.927a1 1 0 011.902 0l1.885 3.82a1 1 0 00.756.545l4.2.61a1 1 0 01.564 1.706l-3.04 2.968a1 1 0 00-.287.885l.718 4.179a1 1 0 01-1.451 1.054L12 17.347l-3.755 1.973a1 1 0 01-1.451-1.054l.718-4.179a1 1 0 00-.287-.885l-3.04-2.968a1 1 0 01.564-1.706l4.2-.61a1 1 0 00.756-.545l1.885-3.82z" />
+        </svg>`;
+    }
+    starsHtml += `</span>`;
+
+    reviewElement.innerHTML = `
+      <p><strong>${data.review.user}</strong> rated: ${starsHtml}</p>
+      <p>${data.review.comment}</p>
+      <p class="text-sm text-gray-500">${data.review.created_at}</p>
+    `;
+    reviewContainer.appendChild(reviewElement);
+    fetchAndDisplayReviews(id)
+  } else {
+    alert(data.error || "Failed to add review. Please try again.");
+  }
+}
+
+async function deleteReview(reviewId, reviewElement) {
+  const csrfToken = document.getElementById("restaurant-reviews").getAttribute("data-csrf-token");
+  const response = await fetch(`/reviews/api/delete_review/${reviewId}/`, {
+      method: "DELETE",
+      headers: {
+        "X-CSRFToken": csrfToken, 
+        "Content-Type": "application/json" 
+      }
+  });
+
+  const data = await response.json();
+  if (data.success) {
+      reviewElement.remove();
+      const reviewContainer = document.getElementById("reviews-container");
+      if (reviewContainer.childElementCount === 0) {
+          // Jika tidak ada, tambahkan kembali teks "There are no reviews yet!"
+          const noReviewsElement = document.createElement("p");
+          noReviewsElement.id = "no-reviews-text";
+          noReviewsElement.classList.add("text-gray-500", "italic", "mt-4");
+          noReviewsElement.innerText = "There are no reviews yet!";
+          reviewContainer.appendChild(noReviewsElement);
+      }
+    } else {
+      alert("Failed to delete review. Please try again.");
+  }
 }
 
 const url = new URL(window.location.href);
