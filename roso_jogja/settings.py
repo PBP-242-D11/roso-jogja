@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "restaurant",
     "cart_and_order",
     "promo",
+    "review"
 ]
 
 MIDDLEWARE = [

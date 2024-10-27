@@ -25,7 +25,8 @@ urlpatterns = [
     path("", include("main.urls")),
     path("restaurant/", include("restaurant.urls")),
     path("order/", include("cart_and_order.urls")),
-    path("promo/", include("promo.urls"))
+    path("promo/", include("promo.urls")),
+    path('reviews/', include('review.urls')),   # Menyertakan urls.py dari app review
 ]
 
 if settings.DEBUG:
