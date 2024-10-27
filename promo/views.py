@@ -59,7 +59,10 @@ def use_promo(request, restaurant_id):
         promo_code = request.POST.get('promo_code')
         promo_id = request.POST.get('promo_id')
         try:
-            promo = Promo.objects.filter(promo_code=promo_code).first()
+            promo = Promo.objects.filter(promo_code=promo_code, restaurant=restaurant_id).first()
+            if promo.min_payment > total_price or promo.expiry_date < date.today():
+                promo=""
+                return JsonResponse({'status': 'error', 'message': "Requirements not met to use this promo."})
             if not promo and promo_id:
                 promo = Promo.objects.filter(id=promo_id).first()
         except:
@@ -73,7 +76,7 @@ def use_promo(request, restaurant_id):
     context = {
         'promos': promos,
         'other_promos': other_promos,
-        'message': 'No promos available' if not promos else '',
+        'message': 'No promos available. Try entering a promo code instead.' if not promos else '',
         'restaurant_id': restaurant_id
     }
     return render(request, 'use_promo.html', context)
@@ -121,18 +124,23 @@ def add_promo(request):
 @login_required
 @role_required(allowed_roles=["R", "A"])
 def edit_promo(request, promo_id):
+    if request.user.role == "A":
+        restaurant_queryset = Restaurant.objects.all()
+    elif request.user.role == "R":
+        restaurant_queryset = Restaurant.objects.filter(owner=request.user)
     promo = get_object_or_404(Promo, id=promo_id)
     
     if request.method == 'POST':
-        form = PromoForm(request.POST, instance=promo)
+        form = PromoForm(request.POST, instance=promo, restaurant_queryset=restaurant_queryset)
         if form.is_valid():
             form.save()
             return redirect('/promo')
     
     else:
-        form = PromoForm(instance=promo)
+        form = PromoForm(instance=promo, restaurant_queryset=restaurant_queryset)
     
     context = {
+        'restaurant': restaurant_queryset,
         'form': form,
         'promo': promo,
     }
