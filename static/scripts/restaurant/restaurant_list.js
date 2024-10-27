@@ -148,30 +148,70 @@ function updatePagination(response) {
 }
 
 // Fungsi untuk menambahkan item ke wishlist menggunakan AJAX
-function addToWishlist(restaurantId) {
-    fetch(`/wishlist/add/${restaurantId}/`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-        },
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.created && !alertShown) {
-                alert(
-                    `Successfully added ${data.restaurant_name} to your wishlist!`
-                );
-                alertShown = true;
-                document
-                    .getElementById(`heart-icon-${restaurantId}`)
-                    .setAttribute("fill", "red");
-            } else if (!data.created) {
-                alert(`${data.restaurant_name} is already in your wishlist.`);
-            }
-        })
-        .catch((error) => console.error("Error:", error));
+async function addToWishlist(restaurantId) {
+    try {
+        const response = await fetch(`/wishlist/add/${restaurantId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+            },
+        });
+        const data = await response.json();
+
+        if (data.created) {
+            // Notifikasi berhasil menambahkan
+            showNotification(
+                `${data.restaurant_name} added to your wishlist!`,
+                "success"
+            );
+            document
+                .getElementById(`heart-icon-${restaurantId}`)
+                .setAttribute("fill", "red");
+        } else {
+            // Notifikasi sudah ada di wishlist
+            showNotification(
+                `${data.restaurant_name} is already in your wishlist.`,
+                "error"
+            );
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        showNotification("Something went wrong. Please try again.", "error");
+    }
 }
+
+// Fungsi untuk menghapus dari wishlist
+async function removeFromWishlist(restaurantId) {
+    try {
+        const response = await fetch(`/wishlist/remove/${restaurantId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+            },
+        });
+        const data = await response.json();
+
+        if (data.deleted) {
+            // Notifikasi berhasil dihapus
+            showNotification(
+                `Removed ${data.restaurant_name} from your wishlist.`,
+                "error"
+            );
+            document
+                .getElementById(`heart-icon-${restaurantId}`)
+                .setAttribute("fill", "none");
+        } else {
+            // Notifikasi gagal menghapus
+            showNotification("Failed to remove from wishlist.", "error");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        showNotification("Something went wrong. Please try again.", "error");
+    }
+}
+
 
 const url = new URL(window.location.href);
 const page = url.searchParams.get("page") || 1;
@@ -221,6 +261,37 @@ async function createRestaurant() {
         });
     }
 }
+
+function showNotification(message, type) {
+    const notification = document.getElementById("notification");
+    notification.textContent = message;
+
+    // Reset kelas Tailwind untuk menghindari kelas sebelumnya tertinggal
+    notification.className =
+        "fixed bottom-4 right-4 p-4 rounded-lg text-white text-sm font-semibold shadow-lg transition-all duration-500 ease-out opacity-0";
+
+    // Tambahkan kelas warna berdasarkan tipe
+    if (type === "success") {
+        notification.classList.add("bg-green-500"); // Hijau untuk success
+    } else if (type === "error") {
+        notification.classList.add("bg-red-500"); // Merah untuk error
+    }
+
+    // Tampilkan notifikasi dengan animasi smooth
+    setTimeout(() => {
+        notification.classList.remove("opacity-0");
+        notification.classList.add("opacity-100");
+    }, 100); // Delay kecil agar animasi smooth saat muncul
+
+    // Hapus notifikasi setelah beberapa detik dengan fade-out yang lebih lama
+    setTimeout(() => {
+        notification.classList.remove("opacity-100");
+        notification.classList.add("opacity-0");
+        setTimeout(() => notification.classList.add("hidden"), 600); // Tambahkan hidden setelah animasi selesai
+    }, 4000); // Menghilang setelah 4 detik
+}
+
+
 
 document
     .getElementById("createRestaurantForm")

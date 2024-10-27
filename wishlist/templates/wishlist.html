@@ -35,8 +35,39 @@
         {% endif %}
     </div>
 
-    <!-- JavaScript untuk menghapus item dari wishlist dengan AJAX -->
+    <!-- Notifikasi Popup -->
+    <div id="notification" class="hidden fixed bottom-4 right-4 p-4 rounded-lg text-white text-sm font-semibold shadow-lg"></div>
+
+    <!-- JavaScript untuk menghapus item dari wishlist dengan AJAX dan menampilkan notifikasi -->
     <script>
+        function showNotification(message, type) {
+            const notification = document.getElementById("notification");
+            notification.textContent = message;
+            
+            // Reset kelas untuk notifikasi
+            notification.className = "fixed bottom-4 right-4 p-4 rounded-lg text-white text-sm font-semibold shadow-lg transition-all duration-500 ease-out opacity-0"; 
+            
+            // Tambahkan kelas warna berdasarkan tipe
+            if (type === "success") {
+                notification.classList.add("bg-green-500"); // Hijau untuk sukses
+            } else if (type === "error") {
+                notification.classList.add("bg-red-500"); // Merah untuk error
+            }
+
+            // Tampilkan notifikasi dengan animasi smooth
+            setTimeout(() => {
+                notification.classList.remove("opacity-0");
+                notification.classList.add("opacity-100");
+            }, 100); 
+
+            // Hapus notifikasi setelah beberapa detik dengan fade-out
+            setTimeout(() => {
+                notification.classList.remove("opacity-100");
+                notification.classList.add("opacity-0");
+                setTimeout(() => notification.classList.add("hidden"), 600); 
+            }, 4000); 
+        }
+
         function removeFromWishlist(restaurantId) {
             fetch(`/wishlist/remove/${restaurantId}/`, {
                 method: "POST",
@@ -48,13 +79,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.deleted) {
-                    alert("Item removed from wishlist.");
-                    location.reload(); // Memuat ulang halaman untuk memperbarui daftar
+                    showNotification("Item removed from wishlist.", "error"); // Tampilkan pesan popup di bawah
+                    setTimeout(() => location.reload(), 1000); // Memuat ulang halaman setelah notifikasi
                 } else {
-                    alert("Failed to remove item from wishlist.");
+                    showNotification("Failed to remove item from wishlist.", "error");
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("An error occurred while removing item.", "error");
+            });
         }
     </script>
 {% endblock content %}
