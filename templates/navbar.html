@@ -1,55 +1,50 @@
 {% load static %}
-<nav style="background-color: #FFFFFF; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" class="fixed top-0 left-0 z-40 w-screen font-['Poppins']">
+<nav class="fixed top-0 left-0 z-40 w-screen bg-white shadow-md font-['Poppins']">
     <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <div class="flex items-center">
                 <img src="{% static 'images/logo.png' %}" alt="RosoJogja logo" class="h-10 w-10 mr-2" />
                 <a href="{% url 'main:show_main' %}">
-                    <h1 style="font-size: 1.5rem; font-weight: bold; color: #FF7043;" class="text-center">RosoJogja</h1> <!-- Ukuran font diubah di sini -->
+                    <h1 class="text-xl font-bold text-[#FF7043] text-center">RosoJogja</h1>
                 </a>
             </div>
             <div class="hidden md:flex items-center max-h-full">
-                <a href="{% url 'main:show_main' %}" style="color: #333333; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 transition duration-300">Home</a>
-                <a href="{% url 'restaurant:show_restaurants' %}" style="color: #333333; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 transition duration-300">Restaurants</a>
+                <a href="{% url 'main:show_main' %}" class="text-[#333333] text-sm font-bold py-2 px-4 transition duration-300 text-center hover:text-[#FF7043]">Home</a>
+                <a href="{% url 'restaurant:show_restaurants' %}" class="text-[#333333] text-sm font-bold py-2 px-4 transition duration-300 text-center hover:text-[#FF7043]">Restaurants</a>
                 {% if user.is_authenticated and user.role == 'C' %}
-                    <a href="{% url 'order:show_cart' %}" style="color: #333333; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 transition duration-300">Cart</a>
+                    <a href="{% url 'order:show_cart' %}" class="text-[#333333] text-sm font-bold py-2 px-4 transition duration-300 text-center hover:text-[#FF7043]">Cart</a>
                 {% endif %}
                 {% if user.is_authenticated %}
-                    <a href="{% url 'promo:promo_home' %}" style="color: #333333; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 transition duration-300">Promo</a>
+                    <a href="{% url 'promo:promo_home' %}" class="text-[#333333] text-sm font-bold py-2 px-4 transition duration-300 text-center hover:text-[#FF7043]">Promo</a>
                 {% endif %}
             </div>
             <div class="hidden md:flex items-center max-h-full relative">
                 {% if user.is_authenticated %}
                     <div class="flex items-center relative gap-2">
                         <div class="flex items-center">
-                            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
-                                 alt="User profile image"
-                                 class="object-cover h-8 w-8 rounded-full mr-1" />
+                            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}" alt="User profile image" class="object-cover h-8 w-8 rounded-full mr-1" />
                             <button id="dropdown-trigger" class="focus:outline-none ml-1">
-                                <svg class="w-4 h-4 text-gray-800 transition-transform"
-                                     fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <svg class="w-4 h-4 text-[#333333] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
                         </div>
                         <!-- Dropdown Menu -->
                         <div id="dropdown-menu" class="hidden absolute top-12 right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-                            <a href="{% url 'order:show_order_history' %}" class="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Order History</a>
-                            <a href="{% url 'main:logout' %}" class="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Logout</a>
+                            {% if user.role == 'C'%}
+                            <a href="{% url 'order:show_order_history' %}" class="block px-4 py-2 text-sm text-[#333333] hover:bg-gray-100 hover:text-[#FF7043]">Order History</a>
+                            {% endif %}
+                            <a href="{% url 'main:logout' %}" class="block px-4 py-2 text-sm text-[#333333] hover:bg-gray-100 hover:text-[#FF7043]">Logout</a>
                         </div>
                     </div>
                 {% else %}
-                    <a href="{% url 'main:login' %}" style="background-color: #FF7043; color: #FFFFFF; font-size: 0.875rem;" class="text-center font-bold py-2 px-4 rounded transition duration-300 mr-2">
-                        Login
-                    </a>
-                    <a href="{% url 'main:register' %}" style="background-color: #D13529; color: #FFFFFF; font-size: 0.875rem;" class="text-center font-bold py-2 px-4 rounded transition duration-300">
-                        Register
-                    </a>
+                    <a href="{% url 'main:login' %}" class="bg-[#FF7043] text-white text-sm font-bold py-2 px-4 rounded transition duration-300 text-center mr-2 hover:bg-orange-600">Login</a>
+                    <a href="{% url 'main:register' %}" class="bg-[#D13529] text-white text-sm font-bold py-2 px-4 rounded transition duration-300 text-center hover:bg-red-800">Register</a>
                 {% endif %}
             </div>
             <div class="md:hidden flex items-center">
                 <button class="mobile-menu-button">
-                    <svg class="w-6 h-6" style="color: #D13529;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-6 h-6 text-[#D13529]" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
                         <path d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
@@ -66,17 +61,23 @@
                     </div>
                     <span style="color: #333333; font-size: 0.875rem;" class="block px-3 py-2">Welcome, <b>{{ user.username }}</b></span>
                 </div>
-                <a href="{% url 'restaurant:show_restaurants' %}" style="color: #333333; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 transition duration-300">Restaurants</a>
-                <a href="{% url 'main:logout' %}" style="background-color: #D13529; color: #FFFFFF; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 rounded transition duration-300">
-                    Logout
-                </a>
+                <!-- Authenticated User Links -->
+                <a href="{% url 'main:show_main' %}" class="block text-center font-bold py-2 px-4 transition duration-300 text-[#333333] hover:text-[#FF7043]" style="font-size: 0.875rem;">Home</a>
+                <a href="{% url 'restaurant:show_restaurants' %}" class="block text-center font-bold py-2 px-4 transition duration-300 text-[#333333] hover:text-[#FF7043]" style="font-size: 0.875rem;">Restaurants</a>
+                {% if user.role == 'C' %}
+                    <a href="{% url 'order:show_cart' %}" class="block text-center font-bold py-2 px-4 transition duration-300 text-[#333333] hover:text-[#FF7043]" style="font-size: 0.875rem;">Cart</a>
+                {% endif %}
+                <a href="{% url 'promo:promo_home' %}" class="block text-center font-bold py-2 px-4 transition duration-300 text-[#333333] hover:text-[#FF7043]" style="font-size: 0.875rem;">Promo</a>
+                {% if user.role == 'C' %}
+                    <a href="{% url 'order:show_order_history' %}" class="block text-center font-bold py-2 px-4 transition duration-300 text-[#333333] hover:text-[#FF7043]" style="font-size: 0.875rem;">Order History</a>
+                {% endif %}
+                <a href="{% url 'main:logout' %}" class="block text-center font-bold py-2 px-4 rounded transition duration-300" style="background-color: #D13529; color: #FFFFFF; font-size: 0.875rem;">Logout</a>
             {% else %}
-                <a href="{% url 'main:login' %}" style="background-color: #FF7043; color: #FFFFFF; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 rounded transition duration-300 mb-2">
-                    Login
-                </a>
-                <a href="{% url 'main:register' %}" style="background-color: #D13529; color: #FFFFFF; font-size: 0.875rem;" class="block text-center font-bold py-2 px-4 rounded transition duration-300">
-                    Register
-                </a>
+                <!-- Guest User Links -->
+                <a href="{% url 'main:show_main' %}" class="block text-center font-bold py-2 px-4 transition duration-300 text-[#333333] hover:text-[#FF7043]" style="font-size: 0.875rem;">Home</a>
+                <a href="{% url 'restaurant:show_restaurants' %}" class="block text-center font-bold py-2 px-4 transition duration-300 text-[#333333] hover:text-[#FF7043]" style="font-size: 0.875rem;">Restaurants</a>
+                <a href="{% url 'main:login' %}" class="block text-center font-bold py-2 px-4 rounded transition duration-300 mb-2" style="background-color: #FF7043; color: #FFFFFF; font-size: 0.875rem;">Login</a>
+                <a href="{% url 'main:register' %}" class="block text-center font-bold py-2 px-4 rounded transition duration-300" style="background-color: #D13529; color: #FFFFFF; font-size: 0.875rem;">Register</a>
             {% endif %}
         </div>
     </div>
