@@ -26,6 +26,9 @@ def create_order(request):
         notes = data.get("notes", "")
         payment_method = data.get("payment_method")
         final_price = data.get("final_price", 0)
+        discount = cart.total_price - final_price
+        if discount == cart.total_price:
+            discount = 0
 
         if not payment_method:
             return HttpResponse("Payment method is required", status=400) 
@@ -37,7 +40,7 @@ def create_order(request):
             notes=notes,
             payment_method=payment_method,
             total_price=final_price,  # Set initial total_price as final_price, if 0 then update in calculate price
-            promo_cut=0
+            promo_cut=discount
         )
 
         # Create all order items
@@ -52,14 +55,9 @@ def create_order(request):
         # Now update the order's total price manually after all items are created
         if order.total_price == 0:
             order.total_price = order.calculate_total_price
-        else:
-            print("satu", order.total_price)
-            print("dua", order.calculate_total_price)
-            order.promo_cut = float(order.calculate_total_price - order.total_price)
+        
         order.save()
         order.refresh_from_db() 
-        
-        print("ini", order.promo_cut)
 
         # Clear the cart after the order is created
         cart.cart_items.all().delete()
@@ -184,10 +182,14 @@ def update_item_quantity(request, food_id):
 @role_required(['C'])
 def show_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    
+
+    total_orders = orders.count()
+    total_spent = sum(order.total_price for order in orders)  
     context = {
         'orders': orders,
         'username': request.user.username,
+        'total_orders': total_orders,
+        'total_spent': total_spent,
     }
     return render(request, 'order_history.html', context)
 

@@ -78,7 +78,6 @@ class Order(models.Model):
             super(Order, self).save(*args, **kwargs)  # Save to generate primary key
         if self.total_price == 0:
             self.total_price = self.calculate_total_price  # Calculate total price
-        self.promo_cut = self.calculate_total_price - self.total_price
         super(Order, self).save(update_fields=['total_price'])  # Save with updated total_price
 
 class OrderItem(models.Model):

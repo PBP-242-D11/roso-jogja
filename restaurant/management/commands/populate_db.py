@@ -33,7 +33,7 @@ class Command(BaseCommand):
             r = Restaurant.objects.create(
                 name=resto_name,
                 address=resto.get("address", ""),
-                price_range=resto.get("price", 0),
+                categories=resto.get("category", ""),
                 description="",
             )
 

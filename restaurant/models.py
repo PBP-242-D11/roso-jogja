@@ -1,6 +1,7 @@
+import random
 import uuid
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
 
@@ -11,7 +12,8 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     address = models.TextField(blank=True)
-    price_range = models.CharField(max_length=100, blank=True)
+    categories = models.CharField(max_length=255, blank=True)
+    placeholder_image = models.IntegerField(blank=True, null=True)
     owner = models.ForeignKey(
         "main.User",
         on_delete=models.CASCADE,
@@ -34,6 +36,8 @@ class Restaurant(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+        if not self.placeholder_image:
+            self.placeholder_image = random.randint(0, 3)
         super().save(*args, **kwargs)
 
 
