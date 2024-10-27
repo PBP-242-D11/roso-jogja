@@ -25,39 +25,61 @@ async function getWishlist() {
 
 // Memperbarui tampilan daftar restoran berdasarkan halaman yang aktif
 async function refreshRestaurants(page) {
-  const response = await getRestaurants(page);
-  if (response.current_page != page) {
-    window.location.href = `?page=${response.current_page}`;
-  }
+    const response = await getRestaurants(page);
+    if (response.current_page != page) {
+        window.location.href = `?page=${response.current_page}`;
+    }
 
-  const user_data = await fetch("/user/").then((response) => response.json());
+    const user_data = await fetch("/user/").then((response) => response.json());
+    const wishlistIds = await getWishlist(); // Dapatkan ID wishlist
+    const restaurantList = document.getElementById("restaurant-list");
+    let htmlString = "";
 
-  const restaurantList = document.getElementById("restaurant-list");
-  let htmlString = "";
+    if (response.results.length === 0) {
+        return;
+    }
 
-  if (response.results.length === 0) {
-    return;
-  }
+    restaurantList.className =
+        "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
 
-  restaurantList.className =
-    "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
-
-  response.results.forEach((restaurant) => {
-    console.log(restaurant.placeholder_image);
-    htmlString += `
+    response.results.forEach((restaurant) => {
+        const isInWishlist = wishlistIds.includes(restaurant.id);
+        console.log(restaurant.placeholder_image);
+        htmlString += `
                   <div class="relative group h-full">
-                <a href="/restaurant/${restaurant.id}" class="flex flex-col items-center justify-between group rounded-xl shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full bg-red-100">
-                <img src="/static/images/restaurant_placeholder_${restaurant.placeholder_image}.png"
+                <a href="/restaurant/${
+                    restaurant.id
+                }" class="flex flex-col items-center justify-between group rounded-xl shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full bg-red-100">
+                <img src="/static/images/restaurant_placeholder_${
+                    restaurant.placeholder_image
+                }.png"
                          alt="Restaurant placeholder"
                          class="w-auto h-60 p-2" />
                       <div class="bg-white p-6 flex flex-col gap-2 w-full bg-[#F5F5F5]">
-                          <h3 class="font-bold text-xl text-rj-orange tracking-wide line-clamp-1">${restaurant.name}</h3>
-                          <p class="line-clamp-2 text-sm min-h-10">${restaurant.address}</p>
+                          <h3 class="font-bold text-xl text-rj-orange tracking-wide line-clamp-1">${
+                              restaurant.name
+                          }</h3>
+                          <p class="line-clamp-2 text-sm min-h-10">${
+                              restaurant.address
+                          }</p>
                       </div>
-                </a>
+                      </a>
+                      <button id="love-btn-${
+                          restaurant.id
+                      }" class="absolute right-3 top-3 bg-gray-300  rounded-full p-3 group-hover:scale-105 text-gray-500 hover:text-red-500 transition duration-300" onclick="toggleWishlist('${
+            restaurant.id
+        }')">
+                          <svg id="heart-icon-${
+                              restaurant.id
+                          }" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="${
+            isInWishlist ? "red" : "none"
+        }" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 010 6.364L12 20.364l7.682-7.682a4.5 4.5 0 10-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                      </button>
                 ${
-                  user_data.role === "R"
-                    ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
+                    user_data.role === "R"
+                        ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
                     <a href="/restaurant/update/${restaurant.id}"
                        class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition duration-300 shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -78,55 +100,55 @@ async function refreshRestaurants(page) {
                     </a>
                 </div>
                 `
-                    : ""
+                        : ""
                 }
               </div>`;
-  });
+    });
 
-  restaurantList.innerHTML = htmlString;
+    restaurantList.innerHTML = htmlString;
 
-  const navBtnContainer = document.getElementById("nav-btn-container");
-  navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
+    const navBtnContainer = document.getElementById("nav-btn-container");
+    navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
 
-  const pageInfo = document.getElementById("page-info");
-  const prevBtn = document.getElementById("prev-btn");
-  const nextBtn = document.getElementById("next-btn");
-  const pageClass =
-    "rounded-lg w-10 aspect-square flex justify-center items-center";
+    const pageInfo = document.getElementById("page-info");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const pageClass =
+        "rounded-lg w-10 aspect-square flex justify-center items-center";
 
-  pageString = "";
-  if (response.current_page > 1 + PAGE_WIDTH) {
-    pageString += `<a href="?page=1" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">1</a>`;
-    pageString += `<span class="font-semibold text-green-800">...</span>`;
-  }
-  response.page_range.forEach((page) => {
-    if (
-      page < response.current_page - PAGE_WIDTH ||
-      page > response.current_page + PAGE_WIDTH
-    ) {
-      return;
+    pageString = "";
+    if (response.current_page > 1 + PAGE_WIDTH) {
+        pageString += `<a href="?page=1" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">1</a>`;
+        pageString += `<span class="font-semibold text-green-800">...</span>`;
+    }
+    response.page_range.forEach((page) => {
+        if (
+            page < response.current_page - PAGE_WIDTH ||
+            page > response.current_page + PAGE_WIDTH
+        ) {
+            return;
+        }
+
+        pageString +=
+            page === response.current_page
+                ? `<span class="${pageClass} text-green-800">${page}</span>`
+                : `<a href="?page=${page}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${page}</a>`;
+    });
+
+    if (response.current_page < response.num_pages - PAGE_WIDTH) {
+        pageString += `<span class="font-semibold text-green-800">...</span>`;
+        pageString += `<a href="?page=${response.num_pages}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${response.num_pages}</a>`;
     }
 
-    pageString +=
-      page === response.current_page
-        ? `<span class="${pageClass} text-green-800">${page}</span>`
-        : `<a href="?page=${page}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${page}</a>`;
-  });
-
-  if (response.current_page < response.num_pages - PAGE_WIDTH) {
-    pageString += `<span class="font-semibold text-green-800">...</span>`;
-    pageString += `<a href="?page=${response.num_pages}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${response.num_pages}</a>`;
-  }
-
-  pageInfo.innerHTML = pageString;
-  prevBtn.classList.toggle("hidden", !response.has_previous);
-  nextBtn.classList.toggle("hidden", !response.has_next);
-  prevBtn.href = response.has_previous
-    ? `?page=${response.current_page - 1}`
-    : "#";
-  nextBtn.href = response.has_next
-    ? `?page=${response.current_page + 1}`
-    : "#";
+    pageInfo.innerHTML = pageString;
+    prevBtn.classList.toggle("hidden", !response.has_previous);
+    nextBtn.classList.toggle("hidden", !response.has_next);
+    prevBtn.href = response.has_previous
+        ? `?page=${response.current_page - 1}`
+        : "#";
+    nextBtn.href = response.has_next
+        ? `?page=${response.current_page + 1}`
+        : "#";
 }
 
 async function toggleWishlist(restaurantId) {
