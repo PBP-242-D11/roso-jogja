@@ -39,6 +39,12 @@ def wishlist_status(request):
         return JsonResponse(list(wishlist_items), safe=False)
     return JsonResponse([], safe=False)
 
+@login_required
+def wishlist_count(request):
+    """Mengembalikan jumlah item di wishlist pengguna."""
+    count = Wishlist.objects.filter(user=request.user).count()
+    return JsonResponse({'count': count})
+
 
 
 

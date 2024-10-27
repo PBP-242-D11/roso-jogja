@@ -208,6 +208,32 @@ function updatePagination(response) {
         : "#";
 }
 
+async function updateWishlistCount() {
+    try {
+        const response = await fetch("/wishlist/wishlist/status/count/"); // Endpoint baru untuk menghitung jumlah wishlist
+        if (response.ok) {
+            const data = await response.json();
+            const countElement = document.getElementById("wishlist-count");
+
+            if (data.count > 0) {
+                countElement.textContent = data.count;
+                countElement.classList.remove("hidden"); // Tampilkan badge jika ada item
+            } else {
+                countElement.classList.add("hidden"); // Sembunyikan badge jika tidak ada item
+            }
+        } else {
+            console.error("Failed to fetch wishlist count");
+        }
+    } catch (error) {
+        console.error("Error fetching wishlist count:", error);
+    }
+}
+
+// Panggil fungsi ini saat halaman dimuat
+document.addEventListener("DOMContentLoaded", () => {
+    updateWishlistCount();
+});
+
 // Fungsi untuk menambahkan item ke wishlist menggunakan AJAX
 async function addToWishlist(restaurantId) {
     try {
@@ -219,33 +245,32 @@ async function addToWishlist(restaurantId) {
             },
         });
 
-        if (!response.ok) {
-            throw new Error(
-                `Failed to add to wishlist: ${response.status} ${response.statusText}`
-            );
-        }
-
-        const data = await response.json();
-
-        if (data.created) {
-            document
-                .getElementById(`heart-icon-${restaurantId}`)
-                .setAttribute("fill", "red");
-            showNotification(
-                `${data.restaurant_name} added to your wishlist!`,
-                "success"
-            );
+        if (response.ok) {
+            const data = await response.json();
+            if (data.created) {
+                document
+                    .getElementById(`heart-icon-${restaurantId}`)
+                    .setAttribute("fill", "red");
+                showNotification(
+                    `${data.restaurant_name} added to your wishlist!`,
+                    "success"
+                );
+                updateWishlistCount(); // Perbarui jumlah wishlist
+            } else {
+                showNotification(
+                    `${data.restaurant_name} is already in your wishlist.`,
+                    "error"
+                );
+            }
         } else {
-            showNotification(
-                `${data.restaurant_name} is already in your wishlist.`,
-                "error"
-            );
+            throw new Error("Failed to add to wishlist");
         }
     } catch (error) {
         console.error("Error:", error);
-        showNotification(`Something went wrong: ${error.message}`, "error");
+        showNotification("Something went wrong. Please try again.", "error");
     }
 }
+
 
 // Fungsi untuk menghapus dari wishlist
 async function removeFromWishlist(restaurantId) {
@@ -258,28 +283,23 @@ async function removeFromWishlist(restaurantId) {
             },
         });
 
-        if (!response.ok) {
-            throw new Error(
-                `Failed to remove from wishlist: ${response.status} ${response.statusText}`
-            );
-        }
-
-        const data = await response.json();
-
-        if (data.deleted) {
-            document
-                .getElementById(`heart-icon-${restaurantId}`)
-                .setAttribute("fill", "none");
-            showNotification(
-                `Removed Restaurants from your wishlist.`,
-                "error"
-            );
+        if (response.ok) {
+            const data = await response.json();
+            if (data.deleted) {
+                document
+                    .getElementById(`heart-icon-${restaurantId}`)
+                    .setAttribute("fill", "none");
+                showNotification("Removed from your wishlist.", "error");
+                updateWishlistCount(); // Perbarui jumlah wishlist
+            } else {
+                showNotification("Failed to remove from wishlist.", "error");
+            }
         } else {
-            showNotification("Failed to remove from wishlist.", "error");
+            throw new Error("Failed to remove from wishlist");
         }
     } catch (error) {
         console.error("Error:", error);
-        showNotification(`Something went wrong: ${error.message}`, "error");
+        showNotification("Something went wrong. Please try again.", "error");
     }
 }
 
