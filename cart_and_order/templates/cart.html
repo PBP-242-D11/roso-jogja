@@ -47,7 +47,9 @@
 
                     <div class="mb-4">
                         <button id="promo-button" class="font-semibold py-1 px-4 rounded-md bg-[#FF7043] text-[#FFFFFF]">Choose Promo</button>
+
                         <button onclick=deletePromo() class="font-semibold py-1 px-4 rounded-md bg-[#FF7043] text-[#FFFFFF]">Remove Promo</button>
+
                         <div id="popup-message" class="hidden text-[#FF7043]">Please add items to your cart first.</div>
                     </div>
 
@@ -83,11 +85,12 @@
         const orderForm = document.getElementById('order-form');
         const clearCartBtn = document.getElementById('clear-cart-btn');
         const orderMessage = document.getElementById('order-message');
-        
+
         async function deletePromo() {
             document.cookie = "promo_id=; path=/; max-age=0;";
             location.reload();
         }
+
         async function fetchCartItems() {
             try {
                 const response = await fetch('/order/api/cart/');
