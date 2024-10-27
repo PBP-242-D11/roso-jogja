@@ -1,12 +1,15 @@
-{% extends 'base.html' %} {% load static %} {% block meta %}
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
 <title>Register</title>
-{% endblock meta %} {% block content %}
+{% endblock meta %}
+{% block content %}
 <section
-  class="min-h-screen flex items-center justify-center w-screen py-12 px-4 sm:px-6 lg:px-8"
+  class="min-h-screen flex items-center justify-center w-screen py-12 px-4 sm:px-6 lg:px-8 bg-[#FFFFFF]"
 >
-  <div class="bg-gray-50 p-10 rounded-xl form-style">
-    <div class="text-center text-2xl md:text-4xl font-bold text-green-900">
-      <h2>Create your account.</h2>
+  <div class="bg-[#FFFFFF] p-10 rounded-xl form-style shadow-lg max-w-md w-full">
+    <div class="text-center text-2xl md:text-4xl font-bold text-[#FF7043]">
+      <h2>Create Your Account</h2>
     </div>
     <form
       method="POST"
@@ -19,9 +22,9 @@
       <div class="w-full flex flex-col gap-2">
         {% for field in form %}
         <div class="flex flex-col">
-          <label class="font-medium text-sm md:text-base"
-            >{{ field.label }}</label
-          >
+          <label class="font-medium text-sm md:text-base text-[#333333]">
+            {{ field.label }}
+          </label>
           <div class="relative">
             {{ field }}
             <div
@@ -42,15 +45,17 @@
               {% endif %}
             </div>
           </div>
-          {% if field.errors %} {% for error in field.errors %}
+          {% if field.errors %}
+          {% for error in field.errors %}
           <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-          {% endfor %} {% endif %}
+          {% endfor %}
+          {% endif %}
         </div>
         {% endfor %}
       </div>
       <div class="w-full">
         <input
-          class="w-full bg-green-700 p-2 rounded-md text-white hover:bg-green-800 font-medium tracking-wide cursor-pointer !border-0"
+          class="w-full bg-[#FF7043] p-2 rounded-md text-[#FFFFFF] hover:bg-[#FF7043]/90 font-medium tracking-wide cursor-pointer !border-0"
           type="submit"
           value="Register"
         />
@@ -60,7 +65,7 @@
     <div class="mt-4">
       {% for message in messages %}
       <div
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+        class="bg-[#FFE6E6] border border-red-400 text-red-700 px-4 py-3 rounded relative"
         role="alert"
       >
         <span class="block sm:inline">{{ message }}</span>
@@ -68,11 +73,11 @@
       {% endfor %}
     </div>
     {% endif %}
-    <p class="w-full text-center text-sm md:text-base">
+    <p class="w-full text-center text-sm md:text-base text-[#333333]">
       Already have an account?
       <a
         href="{% url 'main:login' %}"
-        class="text-green-700 hover:underline whitespace-nowrap"
+        class="text-[#FF7043] hover:underline whitespace-nowrap"
         >Login here</a
       >
     </p>
