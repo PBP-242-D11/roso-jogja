@@ -13,7 +13,8 @@ const config = {
   theme: {
     extend: {
       colors: {
-        test: "#FF7043",
+        "rj-orange": "#FF7043",
+        "rj-grey": "#333333",
       },
     },
   },
