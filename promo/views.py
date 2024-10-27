@@ -124,18 +124,23 @@ def add_promo(request):
 @login_required
 @role_required(allowed_roles=["R", "A"])
 def edit_promo(request, promo_id):
+    if request.user.role == "A":
+        restaurant_queryset = Restaurant.objects.all()
+    elif request.user.role == "R":
+        restaurant_queryset = Restaurant.objects.filter(owner=request.user)
     promo = get_object_or_404(Promo, id=promo_id)
     
     if request.method == 'POST':
-        form = PromoForm(request.POST, instance=promo)
+        form = PromoForm(request.POST, instance=promo, restaurant_queryset=restaurant_queryset)
         if form.is_valid():
             form.save()
             return redirect('/promo')
     
     else:
-        form = PromoForm(instance=promo)
+        form = PromoForm(instance=promo, restaurant_queryset=restaurant_queryset)
     
     context = {
+        'restaurant': restaurant_queryset,
         'form': form,
         'promo': promo,
     }
