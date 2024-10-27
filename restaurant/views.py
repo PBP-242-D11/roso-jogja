@@ -44,7 +44,8 @@ def restaurant_list(request):
             "slug": restaurant.slug,
             "description": restaurant.description,
             "address": restaurant.address,
-            "price_range": restaurant.price_range,
+            "categories": restaurant.categories,
+            "placeholder_image": restaurant.placeholder_image,
         }
         for restaurant in page_obj
     ]
@@ -73,7 +74,7 @@ def restaurant_detail(request, id):
             "name": restaurant.name,
             "description": restaurant.description,
             "address": restaurant.address,
-            "price_range": restaurant.price_range,
+            "categories": restaurant.categories,
             "foods": [
                 {
                     "id": food.id,
@@ -93,7 +94,7 @@ def restaurant_detail(request, id):
 def create_restaurant(request):
     name = request.POST.get("name")
     address = request.POST.get("address")
-    price_range = request.POST.get("price_range")
+    categories = request.POST.get("categories")
     description = request.POST.get("description")
 
     owner = request.user
@@ -101,7 +102,7 @@ def create_restaurant(request):
     new_restaurant = Restaurant.objects.create(
         name=name,
         address=address,
-        price_range=price_range,
+        categories=categories,
         description=description,
         owner=owner,
     )
