@@ -44,10 +44,10 @@ def add_review(request, restaurant_id):
     return JsonResponse({
         "success": True,
         "review": {
-            "user": user.first_name,
+            "user": review.user.username,
             "rating": review.rating,
             "comment": review.comment,
-            "created_at": review.created_at.strftime("%B %d, %Y, %I:%M %p")
+            "created_at": review.created_at.strftime("%B %d, %Y")
         }
     })
 
@@ -60,7 +60,7 @@ def get_review(request, restaurant_id):
             "user": review.user.username,
             "rating": review.rating,
             "comment": review.comment,
-            "created_at": review.created_at.strftime("%B %d, %Y, %I:%M %p")
+            "created_at": review.created_at.strftime("%B %d, %Y")
         }
         for review in reviews
     ]
