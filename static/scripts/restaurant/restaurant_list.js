@@ -1,31 +1,15 @@
 const PAGE_WIDTH = 2;
+let currentSearchTerm = "";
 
-async function getRestaurants(page) {
-  const response = await fetch(`api/restaurants/?page=${page}&page_size=8`);
+async function getRestaurants(page, search = "") {
+  const response = await fetch(
+    `api/restaurants/?page=${page}&page_size=8&search=${search}`,
+  );
   return await response.json();
 }
 
-async function refreshRestaurants(page) {
-  const response = await getRestaurants(page);
-  if (response.current_page != page) {
-    window.location.href = `?page=${response.current_page}`;
-  }
-
-  const user_data = await fetch("/user/").then((response) => response.json());
-
-  const restaurantList = document.getElementById("restaurant-list");
-  let htmlString = "";
-
-  if (response.results.length === 0) {
-    return;
-  }
-
-  restaurantList.className =
-    "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
-
-  response.results.forEach((restaurant) => {
-    console.log(restaurant.placeholder_image);
-    htmlString += `
+function createRestaurantCard(restaurant, userRole) {
+  return `
                   <div class="relative group h-full">
                 <a href="/restaurant/${restaurant.id}" class="flex flex-col items-center justify-between group rounded-xl shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full bg-red-100">
                 <img src="/static/images/restaurant_placeholder_${restaurant.placeholder_image}.png"
@@ -37,7 +21,7 @@ async function refreshRestaurants(page) {
                       </div>
                 </a>
                 ${
-                  user_data.role === "R"
+                  userRole === "R"
                     ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
                     <a href="/restaurant/update/${restaurant.id}"
                        class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition duration-300 shadow-md">
@@ -62,18 +46,17 @@ async function refreshRestaurants(page) {
                     : ""
                 }
               </div>`;
-  });
+}
 
-  restaurantList.innerHTML = htmlString;
-
+function updatePagination(response) {
   const navBtnContainer = document.getElementById("nav-btn-container");
-  navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
-
   const pageInfo = document.getElementById("page-info");
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
   const pageClass =
     "rounded-lg w-10 aspect-square flex justify-center items-center";
+
+  navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
 
   pageString = "";
   if (response.current_page > 1 + PAGE_WIDTH) {
@@ -111,6 +94,34 @@ async function refreshRestaurants(page) {
   } else {
     nextBtn.classList.add("hidden");
   }
+}
+
+async function refreshRestaurants(page) {
+  const response = await getRestaurants(page, currentSearchTerm);
+  if (response.current_page != page) {
+    window.location.href = `?page=${response.current_page}&search=${currentSearchTerm}`;
+  }
+
+  const user_data = await fetch("/user/").then((response) => response.json());
+
+  const restaurantList = document.getElementById("restaurant-list");
+  let htmlString = "";
+
+  updatePagination(response);
+  if (response.results.length === 0) {
+    restaurantList.className = "flex justify-center items-center h-96";
+    restaurantList.innerHTML = `<h1 class="text-2xl text-gray-500">No restaurants found</h1>`;
+    return;
+  }
+
+  restaurantList.className =
+    "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
+
+  htmlString = response.results
+    .map((restaurant) => createRestaurantCard(restaurant, user_data.role))
+    .join("");
+
+  restaurantList.innerHTML = htmlString;
 }
 
 const url = new URL(window.location.href);
@@ -178,3 +189,27 @@ document
     e.preventDefault();
     createRestaurant();
   });
+
+// Debounce function to limit API calls during search
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Search functionality
+const searchInput = document.getElementById("searchInput");
+const debouncedSearch = debounce((value) => {
+  currentSearchTerm = value;
+  refreshRestaurants(1);
+}, 300);
+
+searchInput.addEventListener("input", (e) => {
+  debouncedSearch(e.target.value);
+});
