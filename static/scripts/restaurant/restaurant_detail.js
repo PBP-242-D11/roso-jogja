@@ -252,8 +252,13 @@ async function submitReview() {
 }
 
 async function deleteReview(reviewId, reviewElement) {
+  const csrfToken = document.getElementById("restaurant-reviews").getAttribute("data-csrf-token");
   const response = await fetch(`/reviews/api/delete_review/${reviewId}/`, {
       method: "DELETE",
+      headers: {
+        "X-CSRFToken": csrfToken, 
+        "Content-Type": "application/json" 
+      }
   });
 
   const data = await response.json();
