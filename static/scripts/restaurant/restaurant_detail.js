@@ -13,7 +13,7 @@ async function refreshRestaurantDetail(id) {
   restaurantMeta.innerHTML = `
     <h1>${restaurant.name}</h1>
     <p>${restaurant.address}</p>
-    <p>${restaurant.price_range}</p>
+    <p>${restaurant.categories}</p>
     <p>${restaurant.description}</p>
   `;
 
@@ -52,7 +52,7 @@ async function refreshRestaurantDetail(id) {
         </div>
         ${
           user_data.role === "C"
-          ? `
+            ? `
           <div class="flex flex-row items-center justify-between gap-2"> 
             <button id="addToCardBtn-${food.id}" class="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 transition duration-300 shadow-md" title="Add to Cart">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 512 512" fill="currentColor">
@@ -66,7 +66,7 @@ async function refreshRestaurantDetail(id) {
               </svg>
             </button> 
           </div>`
-          : ""
+            : ""
         }
       </div>
     `;
@@ -78,7 +78,9 @@ async function refreshRestaurantDetail(id) {
     const addToCardBtn = document.getElementById(`addToCardBtn-${food.id}`);
     if (addToCardBtn) {
       addToCardBtn.addEventListener("click", async () => {
-        await fetch(`/order/api/add_food_to_cart/${food.id}/`).then((response) => response.json());
+        await fetch(`/order/api/add_food_to_cart/${food.id}/`).then(
+          (response) => response.json(),
+        );
       });
     }
   });

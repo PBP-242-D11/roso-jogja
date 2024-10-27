@@ -24,21 +24,18 @@ async function refreshRestaurants(page) {
     "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
 
   response.results.forEach((restaurant) => {
-    htmlString += `<div class="relative group h-full">
-                <div class="flex flex-col items-center justify-between group rounded-md shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full">
-                    <img src="/static/images/restaurant_placeholder.png"
+    console.log(restaurant.placeholder_image);
+    htmlString += `
+                  <div class="relative group h-full">
+                <a href="/restaurant/${restaurant.id}" class="flex flex-col items-center justify-between group rounded-xl shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full bg-red-100">
+                <img src="/static/images/restaurant_placeholder_${restaurant.placeholder_image}.png"
                          alt="Restaurant placeholder"
                          class="w-auto h-60 p-2" />
-                    <a href="/restaurant/${restaurant.id}" class="block w-full">
-                      <div class="bg-white p-4 flex flex-col gap-2 w-full">
-                          <div class="flex flex-col">
-                              <h3 class="font-semibold text-lg text-green-800 tracking-wide">${restaurant.name}</h3>
-                              <p class="text-green-600">${restaurant.price_range}</p>
-                          </div>
-                          <p class="text-green-600">${restaurant.description}</p>
+                      <div class="bg-white p-6 flex flex-col gap-2 w-full bg-[#F5F5F5]">
+                          <h3 class="font-bold text-xl text-rj-orange tracking-wide line-clamp-1">${restaurant.name}</h3>
+                          <p class="line-clamp-2 text-sm min-h-10">${restaurant.address}</p>
                       </div>
-                    </a>
-                </div>
+                </a>
                 ${
                   user_data.role === "R"
                     ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
