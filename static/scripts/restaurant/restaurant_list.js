@@ -60,8 +60,8 @@ function updatePagination(response) {
 
   pageString = "";
   if (response.current_page > 1 + PAGE_WIDTH) {
-    pageString += `<a href="?page=1" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">1</a>`;
-    pageString += `<span class="font-semibold text-green-800">...</span>`;
+    pageString += `<a href="?page=1&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">1</a>`;
+    pageString += `<span class="font-semibold text-rj-orange">...</span>`;
   }
   response.page_range.forEach((page) => {
     if (
@@ -71,32 +71,38 @@ function updatePagination(response) {
       return;
     }
     if (page === response.current_page) {
-      pageString += `<span class="${pageClass} text-green-800">${page}</span>`;
+      pageString += `<span class="${pageClass} text-rj-orange">${page}</span>`;
     } else {
-      pageString += `<a href="?page=${page}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${page}</a>`;
+      pageString += `<a href="?page=${page}&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">${page}</a>`;
     }
   });
   if (response.current_page < response.num_pages - PAGE_WIDTH) {
-    pageString += `<span class="font-semibold text-green-800">...</span>`;
-    pageString += `<a href="?page=${response.num_pages}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${response.num_pages}</a>`;
+    pageString += `<span class="font-semibold text-rj-orange">...</span>`;
+    pageString += `<a href="?page=${response.num_pages}&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">${response.num_pages}</a>`;
   }
 
   pageInfo.innerHTML = pageString;
 
   if (response.has_previous) {
-    prevBtn.href = `?page=${response.current_page - 1}`;
+    prevBtn.href = `?page=${response.current_page - 1}&search=${currentSearchTerm}`;
   } else {
     prevBtn.classList.add("hidden");
   }
 
   if (response.has_next) {
-    nextBtn.href = `?page=${response.current_page + 1}`;
+    nextBtn.href = `?page=${response.current_page + 1}&search=${currentSearchTerm}`;
   } else {
     nextBtn.classList.add("hidden");
   }
 }
 
+const url = new URL(window.location.href);
+const page = url.searchParams.get("page") || 1;
+currentSearchTerm = url.searchParams.get("search") || "";
+const searchInput = document.getElementById("searchInput");
+
 async function refreshRestaurants(page) {
+  searchInput.value = currentSearchTerm;
   const response = await getRestaurants(page, currentSearchTerm);
   if (response.current_page != page) {
     window.location.href = `?page=${response.current_page}&search=${currentSearchTerm}`;
@@ -123,9 +129,6 @@ async function refreshRestaurants(page) {
 
   restaurantList.innerHTML = htmlString;
 }
-
-const url = new URL(window.location.href);
-const page = url.searchParams.get("page") || 1;
 
 refreshRestaurants(page);
 
@@ -204,7 +207,6 @@ function debounce(func, wait) {
 }
 
 // Search functionality
-const searchInput = document.getElementById("searchInput");
 const debouncedSearch = debounce((value) => {
   currentSearchTerm = value;
   refreshRestaurants(1);
