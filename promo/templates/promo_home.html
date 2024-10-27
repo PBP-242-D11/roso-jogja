@@ -147,7 +147,6 @@
         .then(data => {
             const messageElement = document.getElementById('promoMessage');
             messageElement.innerHTML = `
-                <strong>Promo Code:</strong> ${data.promo_code}<br>
                 <strong>Discount:</strong> ${data.type === 'Percentage' ? data.value + '%' : 'Rp' + data.value}<br>
                 <strong>Minimum Payment:</strong> Rp${data.min_payment}<br>
                 <strong>Expiry Date:</strong> ${data.expiry_date}<br>

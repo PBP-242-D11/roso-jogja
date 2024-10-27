@@ -4,16 +4,16 @@
 {% block content %}
 {% include 'navbar.html' %}
 <section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
-    <div class="w-full max-w-2xl bg-white shadow-md rounded-lg p-6">
+    <div class="w-full max-w-2xl bg-[#FFFFFF] shadow-md rounded-lg p-6">
         <h1 class="text-2xl font-bold mb-6 text-gray-900">Add Promo</h1>
 
-        <form method="POST">
+        <form method="POST" onsubmit="return validateForm()">
             {% csrf_token %}
             {{ form.non_field_errors }}
             
             <h2 class="text-lg font-semibold mb-2 text-gray-800">Select Restaurants</h2>
             <button type="button" id="selectBtn" onclick="toggleSelectAll()" 
-                    class="mb-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
+                    class="mb-4 bg-[#FF7043] hover:bg-[#FF7043]/80 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
                 Select All
             </button>
 
@@ -24,7 +24,7 @@
                 <label for="restaurant" class="block mb-2 font-medium text-gray-900">Select Restaurants</label>
                     <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 w-full">
                         {% for checkbox in form.restaurant %}
-                            <li class="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
+                            <li class="p-4 bg-[#333333]/5 border border-gray-200 rounded-lg shadow-md">
                                 {{ checkbox.tag }}
                                 <span class="text-gray-900 font-semibold">{{ checkbox.choice_label }}</span>
                             </li>
@@ -98,7 +98,7 @@
                 {% endif %}
             </div>
         
-            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-md mb-6 w-full">
+            <div class="p-4 bg-[#333333]/5 border border-gray-200 rounded-lg shadow-md mb-6 w-full">
                 <div class="flex items-center">
                     <input type="checkbox" name="shown_to_public" id="shown_to_public" {{ form.shown_to_public.value|yesno:"checked," }}
                            class="mr-2 w-6 h-6 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500">
@@ -110,13 +110,13 @@
             </div>
 
             <button type="submit" 
-                class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
+                class="mt-6 w-full bg-[#FF7043] hover:bg-[#FF7043]/80 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
                 Confirm
             </button>
         </form>
 
         <div class="mt-6">
-            <a href="/promo/" class="text-blue-500 hover:underline">Back to Home</a>
+            <a href="/promo/" class="text-[#333333] hover:underline">Back to Promo</a>
         </div>
     </div>
 </section>
@@ -130,12 +130,12 @@
         const selectBtn = document.getElementById('selectBtn');
         if (allChecked) {
             selectBtn.textContent = 'Select All';
-            selectBtn.classList.remove('bg-red-500');
-            selectBtn.classList.add('bg-blue-500');
+            selectBtn.classList.remove('bg-[#333333]');
+            selectBtn.classList.add('bg-[#FF7043]');
         } else {
             selectBtn.textContent = 'Deselect All';
-            selectBtn.classList.remove('bg-blue-500');
-            selectBtn.classList.add('bg-red-500');
+            selectBtn.classList.remove('bg-[#FF7043]');
+            selectBtn.classList.add('bg-[#333333]');
         }
     }
     function updateValueLabel() {

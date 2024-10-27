@@ -53,9 +53,16 @@ class PromoForm(forms.ModelForm):
         
         # Promo code harus unik, exception case untuk edit kalau idnya sama
         promo_code = cleaned_data.get('promo_code')
+        shown_to_public = cleaned_data.get('shown_to_public')
         if promo_code and Promo.objects.filter(promo_code=promo_code).exclude(id=self.instance.id).exists():
             self.add_error('promo_code', "Promo code must be unique.")
         if promo_code and len(promo_code)>30:
             self.add_error('promo_code', "Promo code must be under 30 characters.")
+
+        if not promo_code and not shown_to_public:
+            error_message = 'Either the Promo Code must be filled or "Shown to Public" must be checked.'
+            self.add_error('promo_code', error_message)
+            self.add_error('shown_to_public', error_message)
+            raise ValidationError(error_message)
         
         return cleaned_data
