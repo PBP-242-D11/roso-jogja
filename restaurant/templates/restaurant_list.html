@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block meta %}<title>Discover Jogja's Finest Restaurants</title>{% endblock %}
+{% block meta %}<title>Restaurant List</title>
+<meta name="csrfmiddlewaretoken" content="{{ csrf_token }}">
+{% endblock %}
 {% block content %}
     {% include 'navbar.html' %}
     <div class="min-h-screen">
@@ -99,6 +101,7 @@
                 </div>
             </div>
         </div>
+        <div id="notification" class="hidden fixed bottom-4 right-4 p-4 rounded-lg text-white text-sm font-semibold shadow-lg"></div>
     </div>
     <script src="{% static 'scripts/restaurant/restaurant_list.js' %}"></script>
 {% endblock %}

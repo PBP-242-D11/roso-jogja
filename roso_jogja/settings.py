@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django_browser_reload",
     "main",
     "restaurant",
+    "wishlist",
     "cart_and_order",
     "promo",
     "review"
