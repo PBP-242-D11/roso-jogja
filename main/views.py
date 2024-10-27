@@ -66,13 +66,17 @@ def logout_user(request):
 
 @login_required(login_url="/login/")
 def get_user_data(request):
+    profile_picture_url = None
+    if request.user.profile_picture:
+        profile_picture_url = request.user.profile_picture.url
+
     user_data = {
         "id": request.user.id,
         "role": request.user.role,
         "username": request.user.username,
         "phone_number": request.user.phone_number,
         "address": request.user.address,
-        "profile_picture": request.user.profile_picture.url,
+        "profile_picture": profile_picture_url,
     }
 
     return JsonResponse(user_data)

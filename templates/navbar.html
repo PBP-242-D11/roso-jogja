@@ -15,6 +15,19 @@
                     <a href="{% url 'order:show_cart' %}" class="text-[#333333] text-sm font-bold py-2 px-4 transition duration-300 text-center hover:text-[#FF7043]">Cart</a>
                 {% endif %}
                 {% if user.is_authenticated %}
+                    <!-- Wishlist dengan badge jumlah -->
+                    <a href="{% url 'wishlist:wishlist_view' %}" class="flex items-center px-2 hover:text-red-500 hover:bg-gray-100 hover:scale-105 transition duration-200 rounded-lg relative">
+                        <!-- Wishlist Logo -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8a4 4 0 017-2 4 4 0 017 2c0 4-7 11-7 11S3 12 3 8z" />
+                        </svg>
+                        <span>Wishlist</span>
+                        <span id="wishlist-count" class="hidden bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center absolute top-0 right-0 -mr-2 -mt-1">0</span>
+                    </a>
+                    <div class="flex justify-center items-center px-2">
+                        <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile_picture.png' %}{% endif %}"
+                             alt="User profile image"
+                             class="object-cover h-10 w-10 rounded-full" />
                     <a href="{% url 'promo:promo_home' %}" class="text-[#333333] text-sm font-bold py-2 px-4 transition duration-300 text-center hover:text-[#FF7043]">Promo</a>
                 {% endif %}
             </div>

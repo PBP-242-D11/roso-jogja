@@ -8,7 +8,7 @@ class RestaurantForm(ModelForm):
 
     class Meta:
         model = Restaurant
-        fields = ["name", "price_range", "address", "description"]
+        fields = ["name", "categories", "address", "description"]
         widgets = {
             "address": forms.Textarea(attrs={"rows": 2}),
             "description": forms.Textarea(attrs={"rows": 3}),
