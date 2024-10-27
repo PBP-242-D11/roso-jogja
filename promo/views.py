@@ -60,6 +60,9 @@ def use_promo(request, restaurant_id):
         promo_id = request.POST.get('promo_id')
         try:
             promo = Promo.objects.filter(promo_code=promo_code).first()
+            if promo.min_payment > total_price:
+                promo=""
+                return JsonResponse({'status': 'error', 'message': "Requirements not met to use this promo."})
             if not promo and promo_id:
                 promo = Promo.objects.filter(id=promo_id).first()
         except:
@@ -73,7 +76,7 @@ def use_promo(request, restaurant_id):
     context = {
         'promos': promos,
         'other_promos': other_promos,
-        'message': 'No promos available' if not promos else '',
+        'message': 'No promos available. Try entering a promo code instead.' if not promos else '',
         'restaurant_id': restaurant_id
     }
     return render(request, 'use_promo.html', context)
@@ -221,4 +224,3 @@ def simulate_promo(request):
         return JsonResponse({"error_message": "Promo not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error_message": str(e)}, status=500)
-
