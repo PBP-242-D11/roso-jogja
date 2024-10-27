@@ -61,17 +61,17 @@ async function refreshRestaurants(page) {
                 <!-- Tombol Love di luar link -->
                 <button id="love-btn-${
                     restaurant.id
-                }" class="text-gray-500 hover:text-red-500 transition duration-300" onclick="addToWishlist('${
+                }" class="text-gray-500 hover:text-red-500 transition duration-300" onclick="toggleWishlist('${
             restaurant.id
         }')">
-                    <svg id="heart-icon-${
-                        restaurant.id
-                    }" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="${
+    <svg id="heart-icon-${
+        restaurant.id
+    }" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="${
             isInWishlist ? "red" : "none"
         }" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 010 6.364L12 20.364l7.682-7.682a4.5 4.5 0 10-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                </button>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 010 6.364L12 20.364l7.682-7.682a4.5 4.5 0 10-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+</button>
               </div>
               <p class="text-green-600">${restaurant.price_range}</p>
               <p class="text-green-600">${restaurant.description}</p>
@@ -98,6 +98,17 @@ async function refreshRestaurants(page) {
 
     restaurantList.innerHTML = htmlString;
     updatePagination(response);
+}
+
+async function toggleWishlist(restaurantId) {
+    const heartIcon = document.getElementById(`heart-icon-${restaurantId}`);
+    const isInWishlist = heartIcon.getAttribute("fill") === "red";
+
+    if (isInWishlist) {
+        await removeFromWishlist(restaurantId);
+    } else {
+        await addToWishlist(restaurantId);
+    }
 }
 
 // Fungsi untuk mengatur navigasi halaman
@@ -156,19 +167,24 @@ async function addToWishlist(restaurantId) {
                 "X-CSRFToken": csrfToken,
             },
         });
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to add to wishlist: ${response.status} ${response.statusText}`
+            );
+        }
+
         const data = await response.json();
 
         if (data.created) {
-            // Notifikasi berhasil menambahkan
+            document
+                .getElementById(`heart-icon-${restaurantId}`)
+                .setAttribute("fill", "red");
             showNotification(
                 `${data.restaurant_name} added to your wishlist!`,
                 "success"
             );
-            document
-                .getElementById(`heart-icon-${restaurantId}`)
-                .setAttribute("fill", "red");
         } else {
-            // Notifikasi sudah ada di wishlist
             showNotification(
                 `${data.restaurant_name} is already in your wishlist.`,
                 "error"
@@ -176,7 +192,7 @@ async function addToWishlist(restaurantId) {
         }
     } catch (error) {
         console.error("Error:", error);
-        showNotification("Something went wrong. Please try again.", "error");
+        showNotification(`Something went wrong: ${error.message}`, "error");
     }
 }
 
@@ -190,24 +206,29 @@ async function removeFromWishlist(restaurantId) {
                 "X-CSRFToken": csrfToken,
             },
         });
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to remove from wishlist: ${response.status} ${response.statusText}`
+            );
+        }
+
         const data = await response.json();
 
         if (data.deleted) {
-            // Notifikasi berhasil dihapus
-            showNotification(
-                `Removed ${data.restaurant_name} from your wishlist.`,
-                "error"
-            );
             document
                 .getElementById(`heart-icon-${restaurantId}`)
                 .setAttribute("fill", "none");
+            showNotification(
+                `Removed Restaurants from your wishlist.`,
+                "error"
+            );
         } else {
-            // Notifikasi gagal menghapus
             showNotification("Failed to remove from wishlist.", "error");
         }
     } catch (error) {
         console.error("Error:", error);
-        showNotification("Something went wrong. Please try again.", "error");
+        showNotification(`Something went wrong: ${error.message}`, "error");
     }
 }
 
