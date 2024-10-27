@@ -15,9 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("main.urls")),
+    path("restaurant/", include("restaurant.urls")),
+    path("wishlist/", include("wishlist.urls")),
+    path("__reload__/", include("django_browser_reload.urls")),
+    path("order/", include("cart_and_order.urls")),
+    path("promo/", include("promo.urls")),
+    path('reviews/', include('review.urls')),   # Menyertakan urls.py dari app review
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

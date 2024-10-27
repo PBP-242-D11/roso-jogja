@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}<title>Edit Promo</title>{% endblock %}
+{% block content %}
+{% include 'navbar.html' %}
+<section class="min-h-screen pt-24 px-3 md:px-10 flex flex-col items-center">
+    <div class="w-full max-w-2xl bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6 text-gray-900">Edit Promo</h1>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            
+            <h2 class="text-lg font-semibold mb-2 text-gray-800">Select Restaurants</h2>
+            <button type="button" id="selectBtn" onclick="toggleSelectAll()" 
+                    class="mb-4 bg-[#FF7043] hover:bg-[#FF7043]/80 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
+                Select All
+            </button>
+
+            <div class="mb-6">
+                {% if form.restaurant|length == 0 %}
+                <div class="text-red-600">WARNING: You can't make promos if you don't own any restaurants!</div>
+                {% else %}
+                <label for="restaurant" class="block mb-2 font-medium text-gray-900">Select Restaurants</label>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 w-full">
+                        {% for checkbox in form.restaurant %}
+                            <li class="p-4 bg-[#333333]/5 border border-gray-200 rounded-lg shadow-md">
+                                {{ checkbox.tag }}
+                                <span class="text-gray-900 font-semibold">{{ checkbox.choice_label }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% if form.restaurant.errors %}
+                        <div class="text-red-600">{{ form.restaurant.errors }}</div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <h2 class="text-lg font-semibold mb-2 text-gray-800">Promo Details</h2>
+            <div class="mb-6">
+                <label for="type" class="block mb-2 font-medium text-gray-900">Promo Type</label>
+                <select name="type" id="type" onchange="updateValueLabel()"
+                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                    <option value="Percentage" {% if form.type.value == "Percentage" %}selected{% endif %}>Percentage</option>
+                    <option value="Fixed Price" {% if form.type.value == "Fixed Price" %}selected{% endif %}>Fixed Price</option>
+                </select>
+                {% if form.type.errors %}
+                    <div class="text-red-600">{{ form.type.errors }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="mb-6">
+                <label for="value" id="value-label" class="block mb-2 font-medium text-gray-900">
+                    {% if form.type.value == "Percentage" %} Discount Value (%) {% else %} Cut-off Price (IDR) {% endif %}
+                </label>
+                <input type="number" name="value" id="value" value="{{ form.value.value }}" step="0.01"
+                       class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                {% if form.value.errors %}
+                    <div class="text-red-600">{{ form.value.errors }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="mb-6">
+                <label for="min_payment" class="block mb-2 font-medium text-gray-900">Minimum Payment</label>
+                <input type="number" name="min_payment" id="min_payment" value="{{ form.min_payment.value }}" step="0.01"
+                       class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                {% if form.min_payment.errors %}
+                    <div class="text-red-600">{{ form.min_payment.errors }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="mb-6">
+                <label for="promo_code" class="block mb-2 font-medium text-gray-900">Promo Code</label>
+                <input type="text" name="promo_code" id="promo_code" value="{{ form.promo_code.value|default:'' }}"
+                       class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                {% if form.promo_code.errors %}
+                    <div class="text-red-600">{{ form.promo_code.errors }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="mb-6">
+                <label for="expiry_date" class="block mb-2 font-medium text-gray-900">Expiry Date</label>
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2.5">
+                    {{ form.expiry_date }}
+                </div>
+                {% if form.expiry_date.errors %}
+                    <div class="text-red-600">{{ form.expiry_date.errors }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="mb-6">
+                <label for="max_usage" class="block mb-2 font-medium text-gray-900">Max Usage (-1 if unlimited)</label>
+                <input type="number" name="max_usage" id="max_usage" value="{{ form.max_usage.value }}"
+                       class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                {% if form.max_usage.errors %}
+                    <div class="text-red-600">{{ form.max_usage.errors }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="p-4 bg-[#333333]/5 border border-gray-200 rounded-lg shadow-md mb-6 w-full">
+                <div class="flex items-center">
+                    <input type="checkbox" name="shown_to_public" id="shown_to_public" {{ form.shown_to_public.value|yesno:"checked," }}
+                           class="mr-2 w-6 h-6 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500">
+                    <span class="text-gray-900 font-semibold">Shown to Public</span>
+                </div>
+                {% if form.shown_to_public.errors %}
+                    <div class="text-red-600">{{ form.shown_to_public.errors }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" 
+                class="mt-6 w-full bg-[#FF7043] hover:bg-[#FF7043]/80 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
+                Save Changes
+            </button>
+        </form>
+
+        <div class="mt-6">
+            <a href="/promo/" class="text-[#333333] hover:underline">Back to Promo</a>
+        </div>
+    </div>
+</section>
+<script>
+    function toggleSelectAll() {
+        const checkboxes = document.querySelectorAll('input[name="restaurant"]');
+        const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+        
+        checkboxes.forEach(checkbox => checkbox.checked = !allChecked);
+
+        const selectBtn = document.getElementById('selectBtn');
+        if (allChecked) {
+            selectBtn.textContent = 'Select All';
+            selectBtn.classList.remove('bg-[#333333]');
+            selectBtn.classList.add('bg-[#FF7043]');
+        } else {
+            selectBtn.textContent = 'Deselect All';
+            selectBtn.classList.remove('bg-[#FF7043]');
+            selectBtn.classList.add('bg-[#333333]');
+        }
+    }
+    function updateValueLabel() {
+        const promoType = document.getElementById('type').value;
+        const valueLabel = document.getElementById('value-label');
+        
+        if (promoType === 'Percentage') {
+            valueLabel.textContent = 'Discount Value (%)';
+        } else {
+            valueLabel.textContent = 'Cut-off Price (IDR)';
+        }
+    }
+
+    updateValueLabel();
+</script>
+{% endblock %}
