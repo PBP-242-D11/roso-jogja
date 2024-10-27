@@ -2,6 +2,8 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.exceptions import PermissionDenied
+from cart_and_order.models import Cart
 
 
 class User(AbstractUser):
@@ -28,3 +30,13 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+    @property
+    def get_or_create_cart(self):
+        """
+        Ensures a cart always exists for this customer
+        """
+        if self.role != "C": 
+            raise PermissionDenied("Only customers can have shopping carts")
+        cart, created = Cart.objects.get_or_create(user=self)
+        return cart
