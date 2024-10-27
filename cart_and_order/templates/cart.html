@@ -37,6 +37,7 @@
                             <span class="text-xl font-semibold" style="color: #333333;">Final Price:</span>
                             <span id="final-price" class="text-2xl font-bold" style="color: #FF7043;">Rp 0</span>
                         </div>
+                        <p id="promo-message" class="text-sm" style="color: #FF7043; font-weight: bold;"></p><br>
                     </div>
                     
                     
@@ -93,7 +94,6 @@
                 cartData = await response.json();
                 const cartItems = cartData.items;
 
-                // Update restaurant name
                 cartRestaurantElement.textContent = cartData.restaurant_name || '-';
 
                 if (cartItems.length === 0) {
@@ -200,7 +200,6 @@
 
             if (promoId) {
                 try {
-                    // Apply promo via an API endpoint
                     const promoResponse = await fetch(`/promo/apply_promo/`, {
                         method: "POST",
                         body: JSON.stringify({ promo_id: promoId, payment: currentTotal, restaurant_id: `${cartData.restaurant.id}` }),
@@ -210,7 +209,20 @@
 
                     if (promoResponse.ok && promoData.new_price) {
                         finalPrice = promoData.new_price;
+                        promoValue = promoData.promo_value;
+                        promoType = promoData.promo_type;
                         document.getElementById('cart-total').textContent = `Rp ${finalPrice.toLocaleString()}`;
+                        const promoDetails = document.getElementById('promo-details');
+                        const promoMessage = document.getElementById('promo-message');
+
+                        if (promoType === 'Percentage') {
+                            promoMessage.textContent = `Promo Applied: ${promoValue}% off`;
+                        } else if (promoType === 'Fixed Price') {
+                            promoMessage.textContent = `Promo Applied: Rp ${promoValue.toLocaleString()} off`;
+                        } else {
+                            promoMessage.textContent = `Promo Applied: Custom Discount`;
+                        }
+
                     } else {
                         orderMessage.innerHTML = promoData.error_message || 'Failed to apply promo.';
                         orderMessage.classList.remove('hidden');
@@ -257,7 +269,6 @@
         clearCartBtn.addEventListener("click", clearCart);
         fetchCartItems();
         document.addEventListener("DOMContentLoaded", function() {
-        // Function to fetch cart items and update button
         async function fetchCartData() {
             try {
                 const response = await fetch('/order/api/cart/');
@@ -294,6 +305,18 @@
                             document.getElementById('promo-cutoff').textContent = `- Rp ${discountAmount}`;
                             document.getElementById('final-price').textContent = `Rp ${finalPrice}`;
                             document.getElementById('cart-total').textContent = `Rp ${currentTotal}`;
+                            promoValue = promoData.promo_value;
+                            promoType = promoData.promo_type;
+                            const promoDetails = document.getElementById('promo-details');
+                            const promoMessage = document.getElementById('promo-message');
+
+                            if (promoType === 'Percentage') {
+                                promoMessage.textContent = `Promo Applied: ${promoValue}% off`;
+                            } else if (promoType === 'Fixed Price') {
+                                promoMessage.textContent = `Promo Applied: Rp ${promoValue} off`;
+                            } else {
+                                promoMessage.textContent = `Promo Applied: Custom Discount`;
+                            }
                         } else {
                             orderMessage.innerHTML = promoData.error_message || 'Failed to apply promo.';
                             orderMessage.classList.remove('hidden');
