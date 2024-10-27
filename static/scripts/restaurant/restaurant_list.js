@@ -31,7 +31,7 @@ async function refreshRestaurants(page) {
                 <img src="/static/images/restaurant_placeholder_${restaurant.placeholder_image}.png"
                          alt="Restaurant placeholder"
                          class="w-auto h-60 p-2" />
-                      <div class="bg-white p-6 flex flex-col gap-2 w-full bg-[#F5F5F5]">
+                      <div class="p-6 flex flex-col gap-2 w-full bg-[#F5F5F5]">
                           <h3 class="font-bold text-xl text-rj-orange tracking-wide line-clamp-1">${restaurant.name}</h3>
                           <p class="line-clamp-2 text-sm min-h-10">${restaurant.address}</p>
                       </div>
