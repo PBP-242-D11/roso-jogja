@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+{% block meta %} 
+    <title>My Wishlist</title> 
+{% endblock meta %}
+
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="container mx-auto py-8 mt-20">
+        <h1 class="text-4xl font-extrabold text-center mb-10 text-gray-700">My Wishlist</h1>
+
+        {% if wishlist_items %}
+            <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+                {% for item in wishlist_items %}
+                    <li class="bg-white shadow-lg rounded-xl p-6 hover:shadow-2xl transform hover:-translate-y-2 transition duration-300 ease-in-out">
+                        <!-- Nama restoran sebagai link ke halaman detail -->
+                        <a href="{% url 'restaurant:show_restaurant_detail' item.restaurant.id %}" class="text-2xl font-semibold text-gray-800 hover:text-green-700">
+                            {{ item.restaurant.name }}
+                        </a>
+                        <p class="text-gray-600 mt-4 text-sm">{{ item.restaurant.description }}</p>
+                        <small class="text-gray-400 mt-6 block">Added on: {{ item.added_at|date:"F j, Y" }}</small>
+                        
+                        <!-- Tombol Hapus dari Wishlist -->
+                        <button onclick="removeFromWishlist('{{ item.restaurant.id }}')" 
+                                class="bg-red-500 text-white px-4 py-2 rounded mt-4 hover:bg-red-700 transition">
+                            Remove from Wishlist
+                        </button>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="flex flex-col items-center mt-10">
+                <img src="{% static 'images/empty_wishlist.png' %}" alt="Empty Wishlist" class="w-40 h-40 opacity-75">
+                <p class="text-gray-500 mt-6 text-lg font-medium text-center">
+                    Your wishlist is currently empty.<br> Start adding some items!
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Notifikasi Popup -->
+    <div id="notification" class="hidden fixed bottom-4 right-4 p-4 rounded-lg text-white text-sm font-semibold shadow-lg"></div>
+
+    <!-- JavaScript untuk menghapus item dari wishlist dengan AJAX dan menampilkan notifikasi -->
+    <script>
+        function showNotification(message, type) {
+            const notification = document.getElementById("notification");
+            notification.textContent = message;
+            
+            notification.className = "fixed bottom-4 right-4 p-4 rounded-lg text-white text-sm font-semibold shadow-lg transition-all duration-500 ease-out opacity-0"; 
+            
+            if (type === "success") {
+                notification.classList.add("bg-green-500"); 
+            } else if (type === "error") {
+                notification.classList.add("bg-red-500"); 
+            }
+
+            setTimeout(() => {
+                notification.classList.remove("opacity-0");
+                notification.classList.add("opacity-100");
+            }, 100); 
+
+            setTimeout(() => {
+                notification.classList.remove("opacity-100");
+                notification.classList.add("opacity-0");
+                setTimeout(() => notification.classList.add("hidden"), 600); 
+            }, 4000); 
+        }
+
+        function removeFromWishlist(restaurantId) {
+            fetch(`/wishlist/remove/${restaurantId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.deleted) {
+                    showNotification("Item removed from wishlist.", "error");
+                    setTimeout(() => location.reload(), 1000); 
+                } else {
+                    showNotification("Failed to remove item from wishlist.", "error");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("An error occurred while removing item.", "error");
+            });
+        }
+    </script>
+{% endblock content %}
