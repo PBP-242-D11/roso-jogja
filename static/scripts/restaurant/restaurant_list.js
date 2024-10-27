@@ -6,16 +6,22 @@ const csrfToken = document
     .querySelector("meta[name='csrfmiddlewaretoken']")
     .getAttribute("content");
 
-// Fungsi untuk mendapatkan ID dari restoran yang ada di wishlist
-async function getWishlistStatus() {
-    const response = await fetch("/wishlist/status/");  // Endpoint yang mengembalikan array ID wishlist
-    return await response.json();
-}
-
 // Mendapatkan daftar restoran dari API
 async function getRestaurants(page) {
     const response = await fetch(`api/restaurants/?page=${page}&page_size=8`);
     return await response.json();
+}
+
+// Mendapatkan daftar ID restoran yang ada di wishlist pengguna
+async function getWishlist() {
+    try {
+        const response = await fetch("/wishlist/wishlist/status/"); // Menggunakan endpoint yang ada
+        const data = await response.json();
+        return data; // Mengembalikan array ID restoran yang ada di wishlist
+    } catch (error) {
+        console.error("Error fetching wishlist status:", error);
+        return []; // Default jika terjadi error
+    }
 }
 
 // Memperbarui tampilan daftar restoran berdasarkan halaman yang aktif
@@ -26,6 +32,8 @@ async function refreshRestaurants(page) {
     }
 
     const user_data = await fetch("/user/").then((response) => response.json());
+    const wishlistIds = await getWishlist(); // Dapatkan ID wishlist
+
     const restaurantList = document.getElementById("restaurant-list");
     let htmlString = "";
 
@@ -38,37 +46,41 @@ async function refreshRestaurants(page) {
 
     // Loop untuk menampilkan tiap restoran dengan tombol love button
     response.results.forEach((restaurant) => {
+        const isInWishlist = wishlistIds.includes(restaurant.id); // Cek apakah ID restoran ada di wishlist
+
         htmlString += `
-      <div class="relative group h-full">
-        <div class="flex flex-col items-center justify-between group rounded-md shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full">
-          <img src="/static/images/restaurant_placeholder.png" alt="Restaurant placeholder" class="w-auto h-60 p-2" />
-          <div class="bg-white p-4 flex flex-col gap-2 w-full">
-            <div class="flex items-center justify-between">
-              <a href="/restaurant/${
-                  restaurant.id
-              }" class="font-semibold text-lg text-green-800 tracking-wide">
-                  ${restaurant.name}
-              </a>
-              <!-- Tombol Love di luar link -->
-              <button id="love-btn-${
-                  restaurant.id
-              }" class="text-gray-500 hover:text-red-500 transition duration-300" onclick="addToWishlist('${
+        <div class="relative group h-full">
+          <div class="flex flex-col items-center justify-between group rounded-md shadow-lg transition-transform group-hover:scale-105 overflow-hidden h-full">
+            <img src="/static/images/restaurant_placeholder.png" alt="Restaurant placeholder" class="w-auto h-60 p-2" />
+            <div class="bg-white p-4 flex flex-col gap-2 w-full">
+              <div class="flex items-center justify-between">
+                <a href="/restaurant/${
+                    restaurant.id
+                }" class="font-semibold text-lg text-green-800 tracking-wide">
+                    ${restaurant.name}
+                </a>
+                <!-- Tombol Love di luar link -->
+                <button id="love-btn-${
+                    restaurant.id
+                }" class="text-gray-500 hover:text-red-500 transition duration-300" onclick="addToWishlist('${
             restaurant.id
         }')">
-                  <svg id="heart-icon-${
-                      restaurant.id
-                  }" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 010 6.364L12 20.364l7.682-7.682a4.5 4.5 0 10-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-              </button>
+                    <svg id="heart-icon-${
+                        restaurant.id
+                    }" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="${
+            isInWishlist ? "red" : "none"
+        }" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 010 6.364L12 20.364l7.682-7.682a4.5 4.5 0 10-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
+              </div>
+              <p class="text-green-600">${restaurant.price_range}</p>
+              <p class="text-green-600">${restaurant.description}</p>
             </div>
-            <p class="text-green-600">${restaurant.price_range}</p>
-            <p class="text-green-600">${restaurant.description}</p>
           </div>
-        </div>
-        ${
-            user_data.role === "R"
-                ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
+          ${
+              user_data.role === "R"
+                  ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
               <a href="/restaurant/update/${restaurant.id}" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition duration-300 shadow-md">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-8 sm:w-8" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -80,14 +92,12 @@ async function refreshRestaurants(page) {
                   </svg>
               </a>
           </div>`
-                : ""
-        }
+                  : ""
+          }
       </div>`;
     });
 
     restaurantList.innerHTML = htmlString;
-
-    // Mengatur navigasi halaman
     updatePagination(response);
 }
 
@@ -149,11 +159,10 @@ function addToWishlist(restaurantId) {
         .then((response) => response.json())
         .then((data) => {
             if (data.created && !alertShown) {
-                // Cek untuk mencegah alert berulang
                 alert(
                     `Successfully added ${data.restaurant_name} to your wishlist!`
                 );
-                alertShown = true; // Set agar tidak muncul alert berikutnya
+                alertShown = true;
                 document
                     .getElementById(`heart-icon-${restaurantId}`)
                     .setAttribute("fill", "red");
