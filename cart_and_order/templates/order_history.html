@@ -1,24 +1,37 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
     {% include 'navbar.html' %}
-    <div class="container mx-auto px-4 pt-24 py-6" style="background-color: #FFFFFF;">
-        <h1 class="text-xl font-bold mb-4" style="color: #333333; font-size: 1.25rem;">Your Orders</h1>
+    <div class="container mx-auto px-4 pt-24 py-6 bg-white">
+        
+        <h1 class="text-xl font-bold mb-4 text-gray-800">Order Summary</h1>
+        <div class="flex justify-between mb-4">
+            <div class="flex-1 mr-2 p-4 border border-gray-200 rounded-lg shadow-md">
+                <p class="text-sm text-gray-800">Total Orders</p>
+                <p class="text-lg font-bold text-brown-900">{{ total_orders }}</p>
+            </div>
+            <div class="flex-1 ml-2 p-4 border border-gray-200 rounded-lg shadow-md">
+                <p class="text-sm text-gray-800">Total Spent</p>
+                <p class="text-lg font-bold text-orange-500">Rp {{ total_spent }}</p>
+            </div>
+        </div>
+
+        <h1 class="text-xl font-bold mb-4 text-gray-800">Your Orders</h1>
         
         {% if orders %}
             <div class="space-y-3">
                 {% for order in orders %}
-                <div style="border: 1px solid #E6E6E6; padding: 1rem; border-radius: 0.75rem; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);">
+                <div class="border border-gray-200 p-4 rounded-lg shadow-md">
                     <div class="flex justify-between items-center">
                         <div>
-                            <p class="font-semibold" style="color: #333333; font-size: 0.875rem;">{{ order.restaurant.name }}</p>
-                            <p class="text-sm" style="color: #666666; font-size: 0.75rem;">{{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p class="font-semibold text-gray-800 text-sm">{{ order.restaurant.name }}</p>
+                            <p class="text-sm text-gray-600">{{ order.created_at|date:"d/m/Y H:i" }}</p>
                         </div>
-                        <div class="text-right" style="min-width: 120px;">
-                            <p class="font-bold" style="color: #FF7043; font-size: 0.875rem; white-space: nowrap;">Rp {{ order.total_price }}</p>
-                            <button onclick="toggleDropdown('dropdown-{{ order.id }}')" style="margin-left: 1rem; color: white; background-color: #FF7043; border-radius: 9999px; padding: 0.25rem 1rem; font-size: 0.75rem; display: flex; align-items: center;">
-                                <span style="margin-right: 0.25rem;">
-                                    <svg id="chevron-{{ order.id }}" class="w-4 h-4" style="color: white; transition: transform 0.2s;" viewBox="0 0 20 20" fill="currentColor">
+                        <div class="text-right min-w-[120px]">
+                            <p class="font-bold text-orange-500 text-sm whitespace-nowrap">Rp {{ order.total_price }}</p>
+                            <button onclick="toggleDropdown('dropdown-{{ order.id }}')" class="ml-4 text-white bg-orange-500 rounded-full px-4 py-1 text-xs flex items-center">
+                                <span class="mr-1">
+                                    <svg id="chevron-{{ order.id }}" class="w-4 h-4 text-white transition-transform" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                     </svg>
                                 </span>
@@ -27,36 +40,39 @@
                         </div>
                     </div>
 
-                    <div id="dropdown-{{ order.id }}" style="display: none; margin-top: 0.75rem; border-top: 1px solid #E6E6E6; padding-top: 0.75rem; transition: all 0.2s;">
-                        <p class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem;">Notes:</p>
-                        <p class="text-sm" style="color: #333333; font-size: 0.75rem;">{{ order.notes|default:"-" }}</p>
+                    <div id="dropdown-{{ order.id }}" class="hidden mt-3 border-t border-gray-200 pt-3">
+                        <p class="text-sm font-semibold text-orange-500">Notes:</p>
+                        <p class="text-sm text-gray-800">{{ order.notes|default:"-" }}</p>
                         
-                        <p class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; margin-top: 0.5rem;">Payment Method:</p>
-                        <p class="text-sm" style="color: #333333; font-size: 0.75rem;">{{ order.get_payment_method_display }}</p>
+                        <p class="text-sm font-semibold text-orange-500 mt-2">Payment Method:</p>
+                        <p class="text-sm text-gray-800">{{ order.get_payment_method_display }}</p>
                         
-                        <p class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; margin-top: 0.5rem;">Food Items:</p>
+                        <p class="text-sm font-semibold text-orange-500 mt-2">Food Items:</p>
                         {% if order.order_items.exists %}
-                            <ul style="margin-top: 0.5rem;">
+                            <ul class="mt-2">
                                 {% for item in order.order_items.all %}
-                                <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #E6E6E6;">
-                                    <span style="color: #3A1F02; font-size: 0.75rem;">{{ item.food.name }}</span>
-                                    <span style="color: #666666; font-size: 0.75rem;">Rp {{ item.price_at_order }} x {{ item.quantity }}</span>
+                                <li class="flex justify-between py-2 border-b border-gray-200">
+                                    <span class="text-brown-900 text-sm">{{ item.food.name }}</span>
+                                    <span class="text-gray-600 text-sm">Rp {{ item.price_at_order }} x {{ item.quantity }}</span>
                                 </li>
                                 {% endfor %}
                             </ul>
-                            <p id="discount-{{ order.id }}" class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; ">Discount:</p>
-                            <p id="discount-amount-{{ order.id }}" class="text-sm" style="color: #333333; font-size: 0.75rem;">Rp {{ order.promo_cut }}</p>
-                            <p class="text-sm font-semibold" style="color: #FF7043; font-size: 0.75rem; margin-top: 0.5rem;">Total:</p>
-                            <p id="calculated-total-{{ order.id }}" class="text-sm" style="color: #333333; font-size: 0.75rem;">Rp {{ order.total_price }}</p>
+                            <p id="discount-{{ order.id }}" class="text-sm font-semibold text-orange-500 mt-2">Discount:</p>
+                            <p id="discount-amount-{{ order.id }}" class="text-sm text-gray-800">Rp {{ order.promo_cut }}</p>
+                            <p class="text-sm font-semibold text-orange-500 mt-2">Total:</p>
+                            <p id="calculated-total-{{ order.id }}" class="text-sm text-gray-800">Rp {{ order.total_price }}</p>
                         {% else %}
-                            <p style="color: #666666; font-size: 0.75rem;">No food items found.</p>
+                            <p class="text-sm text-gray-600">No food items found.</p>
                         {% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <p style="color: #666666; font-size: 0.875rem;">No orders found.</p>
+            <div class="flex flex-col items-center mt-4">
+                <img src="{% static 'images/no_order.png' %}" alt="No Orders Found" class="max-w-xs mb-4 opacity-70">
+                <p class="text-sm text-gray-600 text-center">No orders found.</p>
+            </div>
         {% endif %}
     </div>
 
@@ -64,8 +80,8 @@
         function toggleDropdown(dropdownId) {
             const dropdownElement = document.getElementById(dropdownId);
             const chevron = document.getElementById('chevron-' + dropdownId.split('-')[1]);
-            dropdownElement.style.display = dropdownElement.style.display === 'none' ? 'block' : 'none';
-            chevron.style.transform = dropdownElement.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
+            dropdownElement.classList.toggle('hidden');
+            chevron.style.transform = dropdownElement.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
         }
     </script>
 {% endblock %}
