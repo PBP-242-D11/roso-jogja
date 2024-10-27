@@ -1,5 +1,4 @@
 const PAGE_WIDTH = 2;
-let alertShown = false; // Variabel untuk mengontrol alert agar tidak berulang kali muncul
 
 // Fetch CSRF token dari meta tag untuk digunakan dalam permintaan AJAX POST
 const csrfToken = document
@@ -27,7 +26,7 @@ async function getWishlist() {
 // Memperbarui tampilan daftar restoran berdasarkan halaman yang aktif
 async function refreshRestaurants(page) {
     const response = await getRestaurants(page);
-    if (response.current_page !== page) {
+    if (response.current_page != page) {
         window.location.href = `?page=${response.current_page}`;
     }
 
