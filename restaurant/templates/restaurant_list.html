@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
+
+{% block meta %}
+<title>Discover Jogja's Finest Restaurants</title>
 <meta name="csrfmiddlewaretoken" content="{{ csrf_token }}">
-{% block meta %}<title>Discover Jogja's Finest Restaurants</title>{% endblock %}
+{% endblock %}
 {% block content %}
     {% include 'navbar.html' %}
     <div class="min-h-screen">

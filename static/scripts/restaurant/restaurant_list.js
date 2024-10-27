@@ -1,3 +1,4 @@
+
 const PAGE_WIDTH = 2;
 let currentSearchTerm = "";
 
@@ -5,6 +6,7 @@ let currentSearchTerm = "";
 const csrfToken = document
     .querySelector("meta[name='csrfmiddlewaretoken']")
     .getAttribute("content");
+
 
 // Mendapatkan daftar ID restoran yang ada di wishlist pengguna
 async function getWishlist() {
@@ -18,17 +20,16 @@ async function getWishlist() {
     }
 }
 
-
-    async function getRestaurants(page, search = "") {
+async function getRestaurants(page, search = "") {
     const response = await fetch(
-        `api/restaurants/?page=${page}&page_size=8&search=${search}`,
+        `api/restaurants/?page=${page}&page_size=8&search=${search}`
     );
     return await response.json();
-    }
+}
 
-function createRestaurantCard(restaurant, userRole) {
-  const isInWishlist = wishlistIds.includes(restaurant.id);
-  return `
+function createRestaurantCard(restaurant, userRole, wishlistIds) {
+    const isInWishlist = wishlistIds.includes(restaurant.id);
+    return `
                   <div class="relative group h-full">
                 <a href="/restaurant/${
                     restaurant.id
@@ -50,19 +51,19 @@ function createRestaurantCard(restaurant, userRole) {
                       <button id="love-btn-${
                           restaurant.id
                       }" class="absolute right-3 top-3 bg-gray-300  rounded-full p-3 group-hover:scale-105 text-gray-500 hover:text-red-500 transition duration-300" onclick="toggleWishlist('${
-            restaurant.id
-        }')">
+        restaurant.id
+    }')">
                           <svg id="heart-icon-${
                               restaurant.id
                           }" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="${
-            isInWishlist ? "red" : "none"
-        }" viewBox="0 0 24 24" stroke="currentColor">
+        isInWishlist ? "red" : "none"
+    }" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 010 6.364L12 20.364l7.682-7.682a4.5 4.5 0 10-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>
                       </button>
                 ${
-                  userRole === "R"
-                    ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
+                    userRole === "R"
+                        ? `<div class="absolute -top-2 right-2 md:-right-4 flex space-x-1 group-hover:scale-105 transition-transform">
                     <a href="/restaurant/update/${restaurant.id}"
                        class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition duration-300 shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -89,51 +90,55 @@ function createRestaurantCard(restaurant, userRole) {
 }
 
 function updatePagination(response) {
-  const navBtnContainer = document.getElementById("nav-btn-container");
-  const pageInfo = document.getElementById("page-info");
-  const prevBtn = document.getElementById("prev-btn");
-  const nextBtn = document.getElementById("next-btn");
-  const pageClass =
-    "rounded-lg w-10 aspect-square flex justify-center items-center";
+    const navBtnContainer = document.getElementById("nav-btn-container");
+    const pageInfo = document.getElementById("page-info");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const pageClass =
+        "rounded-lg w-10 aspect-square flex justify-center items-center";
 
-  navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
+    navBtnContainer.className = "flex justify-center items-center gap-3 p-5";
 
-  pageString = "";
-  if (response.current_page > 1 + PAGE_WIDTH) {
-    pageString += `<a href="?page=1&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">1</a>`;
-    pageString += `<span class="font-semibold text-rj-orange">...</span>`;
-  }
-  response.page_range.forEach((page) => {
-    if (
-      page < response.current_page - PAGE_WIDTH ||
-      page > response.current_page + PAGE_WIDTH
-    ) {
-      return;
+    pageString = "";
+    if (response.current_page > 1 + PAGE_WIDTH) {
+        pageString += `<a href="?page=1&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">1</a>`;
+        pageString += `<span class="font-semibold text-rj-orange">...</span>`;
     }
-    if (page === response.current_page) {
-      pageString += `<span class="${pageClass} text-rj-orange">${page}</span>`;
+    response.page_range.forEach((page) => {
+        if (
+            page < response.current_page - PAGE_WIDTH ||
+            page > response.current_page + PAGE_WIDTH
+        ) {
+            return;
+        }
+        if (page === response.current_page) {
+            pageString += `<span class="${pageClass} text-rj-orange">${page}</span>`;
+        } else {
+            pageString += `<a href="?page=${page}&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">${page}</a>`;
+        }
+    });
+    if (response.current_page < response.num_pages - PAGE_WIDTH) {
+        pageString += `<span class="font-semibold text-rj-orange">...</span>`;
+        pageString += `<a href="?page=${response.num_pages}&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">${response.num_pages}</a>`;
+    }
+
+    pageInfo.innerHTML = pageString;
+
+    if (response.has_previous) {
+        prevBtn.href = `?page=${
+            response.current_page - 1
+        }&search=${currentSearchTerm}`;
     } else {
-      pageString += `<a href="?page=${page}&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">${page}</a>`;
+        prevBtn.classList.add("hidden");
     }
-  });
-  if (response.current_page < response.num_pages - PAGE_WIDTH) {
-    pageString += `<span class="font-semibold text-rj-orange">...</span>`;
-    pageString += `<a href="?page=${response.num_pages}&search=${currentSearchTerm}" class="${pageClass} text-white cursor_pointer hover:bg-orange-700 bg-rj-orange">${response.num_pages}</a>`;
-  }
 
-  pageInfo.innerHTML = pageString;
-
-  if (response.has_previous) {
-    prevBtn.href = `?page=${response.current_page - 1}&search=${currentSearchTerm}`;
-  } else {
-    prevBtn.classList.add("hidden");
-  }
-
-  if (response.has_next) {
-    nextBtn.href = `?page=${response.current_page + 1}&search=${currentSearchTerm}`;
-  } else {
-    nextBtn.classList.add("hidden");
-  }
+    if (response.has_next) {
+        nextBtn.href = `?page=${
+            response.current_page + 1
+        }&search=${currentSearchTerm}`;
+    } else {
+        nextBtn.classList.add("hidden");
+    }
 }
 
 async function toggleWishlist(restaurantId) {
@@ -256,7 +261,6 @@ async function addToWishlist(restaurantId) {
     }
 }
 
-
 // Fungsi untuk menghapus dari wishlist
 async function removeFromWishlist(restaurantId) {
     try {
@@ -288,39 +292,38 @@ async function removeFromWishlist(restaurantId) {
     }
 }
 
-
 const url = new URL(window.location.href);
 const page = url.searchParams.get("page") || 1;
 currentSearchTerm = url.searchParams.get("search") || "";
 const searchInput = document.getElementById("searchInput");
 
 async function refreshRestaurants(page) {
-  searchInput.value = currentSearchTerm;
-  const response = await getRestaurants(page, currentSearchTerm);
-  if (response.current_page != page) {
-    window.location.href = `?page=${response.current_page}&search=${currentSearchTerm}`;
-  }
+    searchInput.value = currentSearchTerm;
+    const response = await getRestaurants(page, currentSearchTerm);
+    if (response.current_page != page) {
+        window.location.href = `?page=${response.current_page}&search=${currentSearchTerm}`;
+    }
 
-  const user_data = await fetch("/user/").then((response) => response.json());
-  const wishlistIds = await getWishlist(); // Dapatkan ID wishlist
-  const restaurantList = document.getElementById("restaurant-list");
-  let htmlString = "";
+    const user_data = await fetch("/user/").then((response) => response.json());
+    const wishlistIds = await getWishlist(); // Dapatkan ID wishlist
+    const restaurantList = document.getElementById("restaurant-list");
+    let htmlString = "";
+    
+    updatePagination(response);
+    if (response.results.length === 0) {
+        restaurantList.className = "flex justify-center items-center h-96";
+        restaurantList.innerHTML = `<h1 class="text-2xl text-gray-500">No restaurants found</h1>`;
+        return;
+    }
 
-  updatePagination(response);
-  if (response.results.length === 0) {
-    restaurantList.className = "flex justify-center items-center h-96";
-    restaurantList.innerHTML = `<h1 class="text-2xl text-gray-500">No restaurants found</h1>`;
-    return;
-  }
+    restaurantList.className =
+        "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
 
-  restaurantList.className =
-    "grid gap-6 sm:grid-cols-2 xl:grid-cols-4 p-3 md:p-10";
+    htmlString = response.results
+        .map((restaurant) => createRestaurantCard(restaurant, user_data.role, wishlistIds))
+        .join("");
 
-  htmlString = response.results
-    .map((restaurant) => createRestaurantCard(restaurant, user_data.role))
-    .join("");
-
-  restaurantList.innerHTML = htmlString;
+    restaurantList.innerHTML = htmlString;
 }
 
 refreshRestaurants(page);
@@ -399,34 +402,32 @@ function showNotification(message, type) {
     }, 4000); // Menghilang setelah 4 detik
 }
 
-
-
 document
-  .getElementById("createRestaurantForm")
-  .addEventListener("submit", (e) => {
-    e.preventDefault();
-    createRestaurant();
-  });
+    .getElementById("createRestaurantForm")
+    .addEventListener("submit", (e) => {
+        e.preventDefault();
+        createRestaurant();
+    });
 
 // Debounce function to limit API calls during search
 function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
     };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
 }
 
 // Search functionality
 const debouncedSearch = debounce((value) => {
-  currentSearchTerm = value;
-  refreshRestaurants(1);
+    currentSearchTerm = value;
+    refreshRestaurants(1);
 }, 300);
 
 searchInput.addEventListener("input", (e) => {
-  debouncedSearch(e.target.value);
+    debouncedSearch(e.target.value);
 });
