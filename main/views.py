@@ -80,3 +80,7 @@ def get_user_data(request):
     }
 
     return JsonResponse(user_data)
+
+
+# API for Flutter App
+# =================================================================================================
