@@ -1,6 +1,14 @@
 from django.urls import path
 
-from main.views import get_user_data, login_user, logout_user, register, show_main
+from main.views import (
+    get_user_data,
+    login_user,
+    logout_user,
+    mobile_login,
+    mobile_register,
+    register,
+    show_main,
+)
 
 app_name = "main"
 
@@ -10,4 +18,6 @@ urlpatterns = [
     path("login/", login_user, name="login"),
     path("logout/", logout_user, name="logout"),
     path("user/", get_user_data, name="get_user_data"),
+    path("mobile_login/", mobile_login, name="mobile_login"),
+    path("mobile_register/", mobile_register, name="mobile_register"),
 ]

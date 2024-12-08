@@ -48,12 +48,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_browser_reload",
+    "corsheaders",
     "main",
     "restaurant",
     "wishlist",
     "cart_and_order",
     "promo",
-    "review"
+    "review",
 ]
 
 MIDDLEWARE = [
@@ -66,7 +67,15 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "None"
 
 ROOT_URLCONF = "roso_jogja.urls"
 
