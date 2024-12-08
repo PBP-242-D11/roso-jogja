@@ -1,12 +1,21 @@
+import base64
 import datetime
+import json
+import os
+import re
+import uuid
 
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import PermissionDenied
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from main.forms import CustomRegisterForm
 
@@ -82,14 +91,8 @@ def get_user_data(request):
     return JsonResponse(user_data)
 
 
-import json
-
-from django.contrib.auth import authenticate, get_user_model
-
 # API for Flutter App
 # =================================================================================================
-from django.views.decorators.csrf import csrf_exempt
-
 User = get_user_model()
 
 
@@ -128,19 +131,19 @@ def mobile_login(request):
                 },
                 status=200,
             )
-        else:
-            return JsonResponse(
-                {"status": False, "message": "Login gagal, akun dinonaktifkan."},
-                status=401,
-            )
-    else:
+
         return JsonResponse(
-            {
-                "status": False,
-                "message": "Login gagal, periksa kembali email atau kata sandi.",
-            },
+            {"status": False, "message": "Login gagal, akun dinonaktifkan."},
             status=401,
         )
+
+    return JsonResponse(
+        {
+            "status": False,
+            "message": "Login gagal, periksa kembali email atau kata sandi.",
+        },
+        status=401,
+    )
 
 
 @csrf_exempt
@@ -150,39 +153,119 @@ def mobile_register(request):
             {"status": False, "message": "Method not allowed"}, status=405
         )
 
-    data = json.loads(request.body)
-    username = data.get("username")
-    password1 = data.get("password1")
-    password2 = data.get("password2")
+    try:
+        data = json.loads(request.body)
 
-    if not username or not password1 or not password2:
-        return JsonResponse(
-            {"status": False, "message": "Username and password are required"},
-            status=400,
+        # Required fields validation
+        required_fields = [
+            "username",
+            "password1",
+            "password2",
+            "phone_number",
+            "address",
+            "role",
+        ]
+        for field in required_fields:
+            if not data.get(field):
+                return JsonResponse(
+                    {
+                        "status": False,
+                        "message": f"{field.replace('_', ' ').title()} is required",
+                    },
+                    status=400,
+                )
+
+        # Extract data
+        username = data.get("username")
+        password1 = data.get("password1")
+        password2 = data.get("password2")
+        phone_number = data.get("phone_number")
+        address = data.get("address")
+        role = data.get("role")
+        profile_picture = data.get("profile_picture")
+
+        # Password validation
+        if password1 != password2:
+            return JsonResponse(
+                {"status": False, "message": "Passwords do not match"},
+                status=400,
+            )
+
+        # Username validation
+        if User.objects.filter(username=username).exists():
+            return JsonResponse(
+                {"status": False, "message": "Username is already in use"},
+                status=400,
+            )
+
+        # Phone number validation (basic)
+        if not re.match(r"^(\+62|62|0)8[1-9][0-9]{6,10}$", phone_number):
+            return JsonResponse(
+                {"status": False, "message": "Invalid phone number format"},
+                status=400,
+            )
+
+        # Role validation
+        role_map = {
+            "Customer": User.CUSTOMER,
+            "Restaurant Owner": User.RESTAURANT_OWNER,
+        }
+
+        if role not in role_map:
+            return JsonResponse(
+                {"status": False, "message": "Invalid role selected"},
+                status=400,
+            )
+
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            password=password1,
+            role=role_map[role],
+            phone_number=phone_number,
+            address=address,
         )
 
-    if password1 != password2:
+        # Handle profile picture
+        if profile_picture:
+            try:
+                # Remove the "data:image/jpeg;base64," part if it exists
+                if "," in profile_picture:
+                    profile_picture = profile_picture.split(",")[1]
+
+                # Decode the image
+                image_data = base64.b64decode(profile_picture)
+
+                # Generate a unique filename
+                filename = f"{username}_profile_{uuid.uuid4()}.jpg"
+
+                # Save the image to media directory
+                path = default_storage.save(
+                    os.path.join("profile_pics", filename), ContentFile(image_data)
+                )
+
+                # Update user with profile picture
+                user.profile_picture = path
+                user.save()
+            except Exception as e:
+                # Log the error, but don't prevent registration
+                print(f"Error saving profile picture: {e}")
+
         return JsonResponse(
-            {"status": False, "message": "Password tidak sama"},
-            status=400,
+            {
+                "id": str(user.id),
+                "username": user.username,
+                "role": role,
+                "phone_number": user.phone_number,
+                "status": "success",
+                "message": "Registration successful!",
+            },
+            status=200,
         )
 
-    if User.objects.filter(username=username).exists():
+    except Exception as e:
+        # Catch any unexpected errors
         return JsonResponse(
-            {"status": False, "message": "Username sudah digunakan"},
-            status=400,
+            {"status": False, "message": f"Registration failed: {str(e)}"},
+            status=500,
         )
-
-    user = User.objects.create_user(username=username, password=password1)
-    user.save()
-
-    return JsonResponse(
-        {
-            "username": user.username,
-            "email": user.email,  # Add email if you want
-            "status": "success",
-            "message": "Register sukses!",
-            # You can add more user fields from your custom model here
-        },
-        status=200,
-    )
