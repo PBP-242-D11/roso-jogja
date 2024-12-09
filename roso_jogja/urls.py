@@ -28,7 +28,7 @@ urlpatterns = [
     path("__reload__/", include("django_browser_reload.urls")),
     path("order/", include("cart_and_order.urls")),
     path("promo/", include("promo.urls")),
-    path('reviews/', include('review.urls')),   # Menyertakan urls.py dari app review
+    path('review/', include('review.urls')),   # Menyertakan urls.py dari app review
 ]
 
 if settings.DEBUG:

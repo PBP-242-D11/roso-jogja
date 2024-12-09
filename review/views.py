@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from cart_and_order.models import Order 
 from django.utils.html import strip_tags
+import uuid
 
 
 @login_required
@@ -68,3 +69,27 @@ def delete_review(request, review_id):
         return JsonResponse({"success": True})
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+
+def json_reviews(request, restaurant_id):
+    """
+    View to return all reviews for a given restaurant in JSON format.
+    """
+    # Directly use restaurant_id which is already a UUID object
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+    
+    reviews = Review.objects.filter(restaurant=restaurant).select_related('user')
+    reviews_data = [
+        {
+            "id": review.id,
+            "user": review.user.username,
+            "rating": review.rating,
+            "comment": review.comment,
+            "created_at": review.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        for review in reviews
+    ]
+    
+    return JsonResponse({"reviews": reviews_data})
+
+

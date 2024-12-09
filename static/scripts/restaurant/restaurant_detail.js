@@ -88,7 +88,7 @@ async function refreshRestaurantDetail(id) {
 
   if (user_data.role === "C") {
     const addReviewButton = document.createElement("button");
-    addReviewButton.classList.add("bg-green-600", "text-white", "hover:bg-green-700", "px-4", "py-2", "rounded-md", "font-medium", "mt-6");
+    addReviewButton.classList.add("bg-orange-600", "text-white", "hover:bg-green-700", "px-4", "py-2", "rounded-md", "font-medium", "mt-6");
     addReviewButton.innerText = "Add Review";
     addReviewButton.addEventListener("click", showReviewModal);
   
@@ -171,7 +171,7 @@ function showReviewModal() {
         <input type="hidden" id="review-rating" value="0">
         <label>Comment: <textarea id="review-comment" class="border rounded px-2 py-1 w-full"></textarea></label>
         <div class="flex justify-end mt-4">
-          <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="submitReview()">Submit Review</button>
+          <button class="bg-orange-600 text-white px-4 py-2 rounded" onclick="submitReview()">Submit Review</button>
         </div>
       </div>
     </div>
