@@ -78,9 +78,11 @@ def restaurant_detail(request, id):
         {
             "id": restaurant.id,
             "name": restaurant.name,
+            "slug": restaurant.slug,
             "description": restaurant.description,
             "address": restaurant.address,
             "categories": restaurant.categories,
+            "placeholder_image": restaurant.placeholder_image,
             "foods": [
                 {
                     "id": food.id,

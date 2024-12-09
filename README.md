@@ -13,8 +13,10 @@ RosoJogja adalah aplikasi kuliner yang dirancang khusus untuk membantu Anda mene
 Aplikasi ini menghadirkan beragam pilihan kuliner, mulai dari makanan tradisional (termasuk angkringan), makanan kekinian dan kuliner modern, oleh-oleh khas Yogyakarta, jajanan pasar/kudapan tradisional, minuman khas Yogyakarta, dan minuman modern. RosoJogja hadir untuk memudahkan Anda menemukan kuliner yang sesuai dengan kebutuhan dan keinginan Anda di Jogja. Fokus aplikasi ini adalah memberikan rekomendasi kuliner terdekat dengan cepat dan praktis.
 
 ## Fitur yang disediakan:
-- **Searching Kuliner** <br>
+- **Kategori Kuliner** <br>
 Pengguna dapat memilih kategori kuliner yang diinginkan, seperti makanan tradisional, makanan kekinian, jajanan pasar, atau minuman khas Jogja, sehingga pencarian menjadi lebih terarah.
+- **Informasi Jam Buka** <br>
+Setiap tempat yang direkomendasikan menampilkan informasi jam buka secara real-time, memastikan Anda hanya melihat tempat yang siap melayani.
 - **Ulasan Singkat dan Rating** <br>
 Setiap rekomendasi dilengkapi dengan ulasan singkat dan rating dari pengguna lain, sehingga Anda bisa membuat keputusan yang lebih informasional sebelum mencoba.
 - **Whislist** <br>
