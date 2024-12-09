@@ -120,14 +120,21 @@ def mobile_login(request):
     if user is not None:
         if user.is_active:
             login(request, user)
+
+            user = User.objects.get(username=username)
             # Successful login
             return JsonResponse(
                 {
+                    "id": str(user.id),
                     "username": user.username,
-                    "email": user.email,  # Add email if you want
+                    "role": user.role,
+                    "phone_number": user.phone_number,
+                    "address": user.address,
+                    "profile_picture": (
+                        user.profile_picture.url if user.profile_picture else None
+                    ),
                     "status": True,
-                    "message": "Login sukses!",
-                    # You can add more user fields from your custom model here
+                    "message": "Login successful!",
                 },
                 status=200,
             )
@@ -269,3 +276,32 @@ def mobile_register(request):
             {"status": False, "message": f"Registration failed: {str(e)}"},
             status=500,
         )
+
+
+def mobile_get_user_data(request):
+    if request.method != "GET":
+        return JsonResponse(
+            {"status": False, "message": "Method not allowed"}, status=405
+        )
+
+    user = request.user
+
+    if user.is_authenticated:
+        return JsonResponse(
+            {
+                "id": str(user.id),
+                "username": user.username,
+                "role": user.role,
+                "phone_number": user.phone_number,
+                "address": user.address,
+                "profile_picture": (
+                    user.profile_picture.url if user.profile_picture else None
+                ),
+                "status": "success",
+            },
+            status=200,
+        )
+
+    return JsonResponse(
+        {"status": False, "message": "User is not authenticated"}, status=401
+    )
