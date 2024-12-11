@@ -5,6 +5,7 @@ from main.views import (
     login_user,
     logout_user,
     mobile_login,
+    mobile_logout,
     mobile_register,
     register,
     show_main,
@@ -20,4 +21,5 @@ urlpatterns = [
     path("user/", get_user_data, name="get_user_data"),
     path("mobile_login/", mobile_login, name="mobile_login"),
     path("mobile_register/", mobile_register, name="mobile_register"),
+    path("mobile_logout/", mobile_logout, name="mobile_logout"),
 ]

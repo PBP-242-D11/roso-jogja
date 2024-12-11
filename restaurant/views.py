@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from common.decorators import role_required
@@ -96,6 +97,7 @@ def restaurant_detail(request, id):
     )
 
 
+@csrf_exempt
 @require_POST
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
@@ -117,16 +119,28 @@ def create_restaurant(request):
 
     new_restaurant.save()
 
-    return HttpResponse(b"Restaurant created successfully", status=201)
+    return JsonResponse({"status": "success"}, status=201)
 
 
 @login_required(login_url="/login/")
+@role_required(allowed_roles=["R"])
+def show_delete_restaurant(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+    restaurant.delete()
+
+    return HttpResponseRedirect(
+        reverse("restaurant:show_restaurants"), {"status": "success"}
+    )
+
+
+@csrf_exempt
+@login_required
 @role_required(allowed_roles=["R"])
 def delete_restaurant(request, id):
     restaurant = Restaurant.objects.get(id=id)
     restaurant.delete()
 
-    return HttpResponseRedirect(reverse("restaurant:show_restaurants"))
+    return JsonResponse({"status": "success"}, status=200)
 
 
 @login_required(login_url="/login/")
