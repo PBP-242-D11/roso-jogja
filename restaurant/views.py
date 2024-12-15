@@ -133,19 +133,9 @@ def show_delete_restaurant(request, id):
     )
 
 
-@csrf_exempt
-@login_required
-@role_required(allowed_roles=["R"])
-def delete_restaurant(request, id):
-    restaurant = Restaurant.objects.get(id=id)
-    restaurant.delete()
-
-    return JsonResponse({"status": "success"}, status=200)
-
-
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
-def update_restaurant(request, id):
+def show_update_restaurant(request, id):
     restaurant = Restaurant.objects.get(id=id)
 
     form = RestaurantForm(request.POST or None, instance=restaurant)
@@ -227,3 +217,33 @@ def show_restaurant_detail(request, id):
 def show_restaurants(request):
     context = {"form": RestaurantForm()}
     return render(request, "restaurant_list.html", context)
+
+
+# Mobile API ===================================================================
+
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def delete_restaurant(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+    restaurant.delete()
+
+    return JsonResponse({"status": "success"}, status=200)
+
+
+@csrf_exempt
+@require_POST
+@login_required
+@role_required(allowed_roles=["R"])
+def update_restaurant(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+
+    form = RestaurantForm(request.POST or None, instance=restaurant)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+
+    return JsonResponse({"status": "failed"}, status=400)
