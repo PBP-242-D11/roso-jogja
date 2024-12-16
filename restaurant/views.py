@@ -163,7 +163,7 @@ def create_food(request, id):
     new_food = restaurant.foods.create(name=name, price=price, description=description)
     new_food.save()
 
-    return HttpResponseRedirect(reverse("restaurant:show_restaurant_detail", args=[id]))
+    return JsonResponse({"status": "success"}, status=201)
 
 
 @login_required(login_url="/login/")
@@ -247,3 +247,22 @@ def update_restaurant(request, id):
         return JsonResponse({"status": "success"}, status=200)
 
     return JsonResponse({"status": "failed"}, status=400)
+
+
+@csrf_exempt
+@require_POST
+@login_required
+@role_required(allowed_roles=["R"])
+def create_food(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+    if restaurant.owner != request.user:
+        return JsonResponse({"status": "failed"}, status=401)
+
+    name = request.POST.get("name")
+    price = request.POST.get("price")
+    description = request.POST.get("description")
+
+    new_food = restaurant.foods.create(name=name, price=price, description=description)
+    new_food.save()
+
+    return JsonResponse({"status": "success"}, status=201)
