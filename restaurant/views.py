@@ -184,7 +184,7 @@ def show_delete_food(request, restaurant_id, food_id):
 
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
-def update_food(request, restaurant_id, food_id):
+def show_update_food(request, restaurant_id, food_id):
     restaurant = Restaurant.objects.get(id=restaurant_id)
     if restaurant.owner != request.user:
         return HttpResponse(b"Unauthorized", status=401)
@@ -281,3 +281,23 @@ def delete_food(request, restaurant_id, food_id):
     food.delete()
 
     return JsonResponse({"status": "success"}, status=200)
+
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def update_food(request, restaurant_id, food_id):
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+    if restaurant.owner != request.user:
+        return JsonResponse({"status": "failed"}, status=401)
+
+    food = restaurant.foods.get(id=food_id)
+
+    form = FoodForm(request.POST or None, instance=food)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+
+    return JsonResponse({"status": "failed"}, status=400)
