@@ -7,6 +7,7 @@ from .views import (
     delete_restaurant,
     restaurant_detail,
     restaurant_list,
+    show_delete_food,
     show_delete_restaurant,
     show_restaurant_detail,
     show_restaurants,
@@ -22,6 +23,11 @@ urlpatterns = [
     path("<uuid:id>/", show_restaurant_detail, name="show_restaurant_detail"),
     path("delete/<uuid:id>/", show_delete_restaurant, name="delete_restaurant"),
     path("update/<uuid:id>/", show_update_restaurant, name="update_restaurant"),
+    path(
+        "<uuid:restaurant_id>/delete_food/<uuid:food_id>/",
+        show_delete_food,
+        name="delete_food",
+    ),
     path("api/restaurants/", restaurant_list, name="restaurant_list"),
     path("api/restaurants/create/", create_restaurant, name="create_restaurant"),
     path(
