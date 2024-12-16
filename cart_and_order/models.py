@@ -19,12 +19,10 @@ class Cart(models.Model):
         return sum(cart_item.quantity for cart_item in self.cart_items.all())
         
     def add_food(self, food, quantity=1):
-        # Set restaurant if not yet set
         if not self.restaurant:
             self.restaurant = food.restaurant
             self.save()
 
-        # Ensure food is from the same restaurant
         if food.restaurant == self.restaurant:
             cart_item, created = CartItem.objects.get_or_create(cart=self, food=food)
             cart_item.quantity += quantity if not created else quantity
@@ -65,7 +63,6 @@ class Order(models.Model):
 
     @property
     def calculate_total_price(self):
-        # Use F() expression to multiply price_at_order with quantity
         from django.db.models import F
         total = self.order_items.aggregate(
             total=Sum(F('price_at_order') * F('quantity'))
@@ -73,12 +70,11 @@ class Order(models.Model):
         return total
 
     def save(self, *args, **kwargs):
-        # Ensure the order has a primary key before calculating total price
         if not self.pk:
-            super(Order, self).save(*args, **kwargs)  # Save to generate primary key
+            super(Order, self).save(*args, **kwargs)  
         if self.total_price == 0:
-            self.total_price = self.calculate_total_price  # Calculate total price
-        super(Order, self).save(update_fields=['total_price'])  # Save with updated total_price
+            self.total_price = self.calculate_total_price  
+        super(Order, self).save(update_fields=['total_price'])  
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="order_items", on_delete=models.CASCADE)
@@ -90,8 +86,6 @@ class OrderItem(models.Model):
         return f"{self.quantity} of {self.food.name} in order {self.order.order_id}"
 
     def save(self, *args, **kwargs):
-        # Set price_at_order to current food price if not already set
         if not self.price_at_order:
             self.price_at_order = self.food.price
         super().save(*args, **kwargs)
-

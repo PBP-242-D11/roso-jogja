@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.contrib.auth.decorators import login_required
@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect, render
 from django.urls import reverse
 import json
+from django.core import serializers
 
 from .models import Order, Cart, CartItem, Food, OrderItem
 
@@ -52,14 +53,12 @@ def create_order(request):
                 price_at_order=cart_item.food.price
             )
         
-        # Now update the order's total price manually after all items are created
         if order.total_price == 0:
             order.total_price = order.calculate_total_price
         
         order.save()
         order.refresh_from_db() 
 
-        # Clear the cart after the order is created
         cart.cart_items.all().delete()
         cart.restaurant = None
         cart.save()
@@ -76,7 +75,7 @@ def add_food_to_cart(request, food_id):
     food = Food.objects.get(id=food_id)
     
     cart = request.user.get_or_create_cart
-    quantity = int(request.POST.get("quantity", 1))  # Tambahkan kuantitas dari POST request
+    quantity = int(request.POST.get("quantity", 1))
 
     try:
         cart.add_food(food, quantity=quantity)
@@ -92,7 +91,6 @@ def add_food_to_cart(request, food_id):
 def clear_cart(request):
     user_cart = request.user.get_or_create_cart
 
-    # Hapus semua item dari keranjang
     user_cart.cart_items.all().delete()
     user_cart.restaurant = None
     user_cart.save()
@@ -103,12 +101,12 @@ def clear_cart(request):
 @role_required(['C'])
 def show_cart(request):
     cart = request.user.get_or_create_cart
-    cart_items = cart.cart_items.all()  # Ambil item-item dari keranjang
-    total_price = cart.total_price  # Hitung total harga dari item-item di keranjang
+    cart_items = cart.cart_items.all()
+    total_price = cart.total_price
     
 
     context = {
-        'cart_items': cart_items,  # Gunakan cart_items sebagai pengganti foods
+        'cart_items': cart_items,
         'username': cart.user.username,
         'restaurant': cart.restaurant,
         'total_price': total_price,
@@ -117,7 +115,7 @@ def show_cart(request):
 
 def get_cart_items(request):
     cart = request.user.get_or_create_cart
-    cart_items = cart.cart_items.all()  # Ambil item-item dari keranjang
+    cart_items = cart.cart_items.all()
 
     items = {
         "total": cart.total_price,
@@ -136,7 +134,7 @@ def get_cart_items(request):
         ]
     }
 
-    return JsonResponse(items, safe=False)  # Kembalikan item dalam format JSON
+    return JsonResponse(items, safe=False)
 
 @require_http_methods(["DELETE"])
 @csrf_exempt
@@ -146,7 +144,7 @@ def remove_item_from_cart(request, food_id):
     cart = request.user.get_or_create_cart
     try:
         cart_item = cart.cart_items.get(food_id=food_id)
-        cart_item.delete()  # Hapus item dari keranjang
+        cart_item.delete()
         return HttpResponse("Item removed from cart", status=200)
     except CartItem.DoesNotExist:
         return HttpResponse("Item not found in cart", status=404)
@@ -158,7 +156,7 @@ def remove_item_from_cart(request, food_id):
 def update_item_quantity(request, food_id):
     cart = request.user.get_or_create_cart
     try:
-        data = json.loads(request.body)  # `request.body` contains the raw request body in bytes
+        data = json.loads(request.body)
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
@@ -193,3 +191,143 @@ def show_orders(request):
     }
     return render(request, 'order_history.html', context)
 
+# FLUTTER
+
+@login_required
+@require_GET
+def show_order_flutter(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+
+    total_orders = orders.count()
+    total_spent = sum(order.total_price for order in orders)
+
+    response = {
+        "total_order" : total_orders,
+        "total_spent" : str(total_spent),
+        "orders" : [
+            {   
+                "id" : order.order_id,
+                "notes": order.notes,
+                "payment_method" : order.payment_method,
+                "total_price" : str(order.total_price),
+                "created_at" : order.created_at,
+                "promo_cut" : str(order.promo_cut),
+                "restaurant" : order.restaurant.name,
+                "order_items": [
+                    {
+                        "food_name": item.food.name,
+                        "quantity": str(item.quantity),
+                        "price_at_order": str(item.price_at_order),
+                    }
+                    for item in OrderItem.objects.filter(order=order.order_id)
+                ],
+            }
+            for order in orders
+        ]
+
+    }
+
+    return JsonResponse (response, safe=False)
+
+@login_required
+@require_GET
+def show_cart_flutter(request):
+    cart = request.user.get_or_create_cart
+    cart_items = cart.cart_items.all()
+
+    response = {
+        "total": str(cart.total_price),
+        "restaurant": {
+            "name": cart.restaurant.name if cart.restaurant else None,
+            "id": cart.restaurant.id if cart.restaurant else None,
+        } if cart.restaurant else None,
+        "items":[
+                {
+                'id': item.food.id,
+                'name': item.food.name,
+                'price': str(item.food.price),
+                'quantity': item.quantity,
+            }
+            for item in cart_items
+        ]
+    }
+
+    return JsonResponse(response, safe=False)
+
+#add food to cart
+@require_POST
+@csrf_exempt
+@login_required
+def add_food_to_cart_api(request, food_id):
+    food = get_object_or_404(Food, id=food_id)
+    cart = request.user.get_or_create_cart()
+    quantity = int(request.POST.get("quantity", 1))
+
+    try:
+        cart.add_food(food, quantity=quantity)
+        return JsonResponse({"message": "Food added successfully"}, status=200)
+    except ValueError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+#clear cart
+@require_http_methods(["DELETE"])
+@csrf_exempt
+@login_required
+def clear_cart_api(request):
+    cart = request.user.get_or_create_cart()
+    cart.cart_items.all().delete()
+    cart.restaurant = None
+    cart.save()
+    return JsonResponse({"message": "Successfully cleared the cart"}, status=200)
+
+#remove food from cart
+@require_http_methods(["DELETE"])
+@csrf_exempt
+@login_required
+def remove_food_from_cart_api(request, food_id):
+    cart = request.user.get_or_create_cart()
+    try:
+        cart_item = cart.cart_items.get(food_id=food_id)
+        cart_item.delete()
+        return JsonResponse({"message": "Item removed from cart"}, status=200)
+    except CartItem.DoesNotExist:
+        return JsonResponse({"error": "Item not found in cart"}, status=404)
+    
+#update quantity food
+@require_http_methods(["PATCH"])
+@csrf_exempt
+@login_required
+def update_food_quantity_api(request, food_id):
+    cart = request.user.get_or_create_cart()
+    try:
+        data = json.loads(request.body)
+        quantity = data.get("quantity")
+        if quantity is None:
+            return JsonResponse({"error": "Quantity is required"}, status=400)
+        if not isinstance(quantity, int) or quantity < 0:
+            return JsonResponse({"error": "Invalid quantity"}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    try:
+        cart_item = cart.cart_items.get(food_id=food_id)
+        if quantity == 0:
+            cart_item.delete()
+            if cart.cart_items.count() == 0:
+                cart.restaurant = None
+                cart.save()
+            return JsonResponse({"message": "Item removed successfully"}, status=200)
+        else:
+            cart_item.quantity = quantity
+            cart_item.save()
+            return JsonResponse({
+                "message": "Item quantity updated successfully",
+                "cart_item": {
+                    "food_id": cart_item.food.id,
+                    "food_name": cart_item.food.name,
+                    "quantity": cart_item.quantity,
+                    "price_at_order": str(cart_item.food.price),
+                }
+            }, status=200)
+    except CartItem.DoesNotExist:
+        return JsonResponse({"error": "Item not found in cart"}, status=404)
