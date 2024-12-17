@@ -46,8 +46,6 @@ INSTALLED_APPS = [
     "review",
 ]
 
-if DEBUG:
-    INSTALLED_APPS += [""]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
