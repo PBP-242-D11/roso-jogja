@@ -20,6 +20,10 @@ services:
       - DB_PORT=5433
       - PRODUCTION=True
       - SECRET_KEY=${SECRET_KEY}
+    expose:
+      - "8000"
+    networks:
+      - rosojogja-network
 
   nginx:
     image: nginx:latest
@@ -31,3 +35,9 @@ services:
       - ./media:/app/media:ro
     depends_on:
       - app
+    networks:
+      - rosojogja-network
+
+networks:
+  rosojogja-network:
+    driver: bridge
