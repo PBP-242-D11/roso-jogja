@@ -209,18 +209,18 @@ def show_order_flutter(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
 
     total_orders = orders.count()
-    total_spent = sum(order.total_price for order in orders)
+    total_spent = str(sum(order.total_price for order in orders))
 
     response = {
         "total_order" : total_orders,
-        "total_spent" : str(total_spent),
+        "total_spent" : total_spent,
         "orders" : [
             {   
-                "id" : order.order_id,
+                "id" : str(order.order_id),
                 "notes": order.notes,
-                "payment_method" : order.payment_method,
+                "payment_method" : str(order.payment_method),
                 "total_price" : str(order.total_price),
-                "created_at" : order.created_at,
+                "created_at" : order.created_at.strftime("%d %B %Y %H:%M"),
                 "promo_cut" : str(order.promo_cut),
                 "restaurant" : order.restaurant.name,
                 "order_items": [
@@ -229,7 +229,7 @@ def show_order_flutter(request):
                         "quantity": str(item.quantity),
                         "price_at_order": str(item.price_at_order),
                     }
-                    for item in OrderItem.objects.filter(order=order.order_id)
+                    for item in OrderItem.objects.filter(order=order)
                 ],
             }
             for order in orders
