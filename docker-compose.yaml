@@ -18,6 +18,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - DB_PORT=5433
+      - PRODUCTION=True
       - SECRET_KEY=${SECRET_KEY}
     expose:
       - "8000"
