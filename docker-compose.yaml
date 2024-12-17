@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rosojogja-app
+    command:
+      [
+        "sh",
+        "-c",
+        "python manage.py migrate && python manage.py populate_db && gunicorn roso_jogja.wsgi:application --bind 0.0.0.0:8000",
+      ]
+    volumes:
+      - ./media:/app/media
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=5433
+      - PRODUCTION=True
+      - SECRET_KEY=${SECRET_KEY}
+
+  nginx:
+    image: nginx:latest
+    container_name: rosojogja-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./media:/app/media:ro
+    depends_on:
+      - app
