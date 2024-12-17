@@ -16,12 +16,21 @@ SECRET_KEY = os.getenv(
 PRODUCTION = os.getenv("PRODUCTION", False)
 DEBUG = not PRODUCTION
 
+# In settings.py
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = False  # Allow HTTP
+    SECURE_SSL_REDIRECT = False  # Let Nginx handle the redirect
     USE_X_FORWARDED_HOST = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SAMESITE = "Lax"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "rosojogja.sijarta-ltb.site"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://rosojogja.sijarta-ltb.site",
+    "https://rosojogja.sijarta-ltb.site",
+]
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
