@@ -16,6 +16,11 @@ SECRET_KEY = os.getenv(
 PRODUCTION = os.getenv("PRODUCTION", False)
 DEBUG = not PRODUCTION
 
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = False  # Allow HTTP
+    USE_X_FORWARDED_HOST = True
+
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "rosojogja.sijarta-ltb.site"]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -42,7 +47,7 @@ INSTALLED_APPS = [
 ]
 
 if DEBUG:
-    INSTALLED_APPS += ["django_browser_reload"]
+    INSTALLED_APPS += [""]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -79,21 +84,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "roso_jogja.wsgi.application"
 
 DATABASES = {
-    "default": (
-        {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-        if DEBUG
-        else {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASS"),
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": os.getenv("DB_PORT"),
-        }
-    )
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASS"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
