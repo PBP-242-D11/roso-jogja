@@ -20,7 +20,6 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = False  # Allow HTTP
     USE_X_FORWARDED_HOST = True
-    CSRF_COOKIE_SECURE = True  # Disallow cookies over HTTP
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "rosojogja.sijarta-ltb.site"]
 
