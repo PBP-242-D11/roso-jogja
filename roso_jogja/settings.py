@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,20 +27,26 @@ AUTH_USER_MODEL = "main.User"
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&bk86)su+v@h*6)wb57_$+pd*7$53iu%*i8j0qr+ntb^wgz#ek"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "django-insecure-&bk86)su+v@h*6)wb57_$+pd*7$53iu%*i8j0qr+ntb^wgz#ek"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 PRODUCTION = os.getenv("PRODUCTION", False)
 DEBUG = not PRODUCTION
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "yudayana-arif-rosojogja.pbp.cs.ui.ac.id",
-    "http://yudayana-arif-rosojogja.pbp.cs.ui.ac.id",
-    "https://yudayana-arif-rosojogja.pbp.cs.ui.ac.id",
-]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "rosojogja.sijarta-ltb.site"]
 
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "None"
 
 # Application definition
 
@@ -47,7 +57,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_browser_reload",
     "corsheaders",
     "main",
     "restaurant",
@@ -56,6 +65,9 @@ INSTALLED_APPS = [
     "promo",
     "review",
 ]
+
+if DEBUG:
+    INSTALLED_APPS += ["django_browser_reload"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -70,12 +82,6 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SAMESITE = "None"
 
 ROOT_URLCONF = "roso_jogja.urls"
 
@@ -103,10 +109,21 @@ WSGI_APPLICATION = "roso_jogja.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": (
+        {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+        if DEBUG
+        else {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASS"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
+        }
+    )
 }
 
 
@@ -145,14 +162,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "/static/"
-if DEBUG:
-    STATICFILES_DIRS = [
-        BASE_DIR / "static"  # merujuk ke /static root project pada mode development
-    ]
-else:
-    STATIC_ROOT = (
-        BASE_DIR / "static"
-    )  # merujuk ke /static root project pada mode production
+STATICFILES_DIRS = [
+    BASE_DIR / "static"  # merujuk ke /static root project pada mode development
+]
+STATIC_ROOT = (
+    BASE_DIR / "staticfiles"
+)  # merujuk ke /static root project pada mode production
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
