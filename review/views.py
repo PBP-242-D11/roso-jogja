@@ -63,7 +63,7 @@ def get_review(request, restaurant_id):
     return JsonResponse({"reviews": reviews_data})
 
 def delete_review(request, review_id):
-    if request.method == "DELETE":
+    if request.method == "GET":
         review = get_object_or_404(Review, id=review_id)
         review.delete()
         return JsonResponse({"success": True})
