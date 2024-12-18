@@ -101,7 +101,7 @@ async function refreshRestaurantDetail(id) {
 }
 
 async function fetchAndDisplayReviews(id, user_data) {
-  const response = await fetch(`/reviews/api/get_reviews/${id}/`);
+  const response = await fetch(`/review/api/get_reviews/${id}/`);
   const data = await response.json();
   const reviewContainer = document.getElementById("reviews-container");
 
@@ -210,7 +210,7 @@ async function submitReview() {
   const rating = document.getElementById("review-rating").value;
   const comment = document.getElementById("review-comment").value;
   const csrfToken = document.getElementById("restaurant-reviews").getAttribute("data-csrf-token");
-  const response = await fetch(`/reviews/api/add_review/${id}/`, {
+  const response = await fetch(`/review/api/add_review/${id}/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -255,7 +255,7 @@ async function submitReview() {
 
 async function deleteReview(reviewId, reviewElement) {
   const csrfToken = document.getElementById("restaurant-reviews").getAttribute("data-csrf-token");
-  const response = await fetch(`/reviews/api/delete_review/${reviewId}/`, {
+  const response = await fetch(`/review/api/delete_review/${reviewId}/`, {
       method: "DELETE",
       headers: {
         "X-CSRFToken": csrfToken, 
