@@ -6,7 +6,9 @@ import re
 import uuid
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import logout
+from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
@@ -278,7 +280,29 @@ def mobile_register(request):
         )
 
 
+@csrf_exempt
+def mobile_logout(request):
+    username = request.user.username
+
+    try:
+        auth_logout(request)
+        return JsonResponse(
+            {
+                "status": True,
+                "message": f"Successfully logged out",
+                "username": username,
+            },
+            status=200,
+        )
+    except:
+        return JsonResponse(
+            {"status": False, "message": "Logout failed"},
+            status=401,
+        )
+
+
 def mobile_get_user_data(request):
+    # If necessary (unused for now)
     if request.method != "GET":
         return JsonResponse(
             {"status": False, "message": "Method not allowed"}, status=405

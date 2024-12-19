@@ -7,3 +7,4 @@ urllib3
 pillow
 django-browser-reload
 django-cors-headers
+python-dotenv

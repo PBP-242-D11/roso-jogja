@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from common.decorators import role_required
@@ -96,6 +97,7 @@ def restaurant_detail(request, id):
     )
 
 
+@csrf_exempt
 @require_POST
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
@@ -117,21 +119,23 @@ def create_restaurant(request):
 
     new_restaurant.save()
 
-    return HttpResponse(b"Restaurant created successfully", status=201)
+    return JsonResponse({"status": "success"}, status=201)
 
 
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
-def delete_restaurant(request, id):
+def show_delete_restaurant(request, id):
     restaurant = Restaurant.objects.get(id=id)
     restaurant.delete()
 
-    return HttpResponseRedirect(reverse("restaurant:show_restaurants"))
+    return HttpResponseRedirect(
+        reverse("restaurant:show_restaurants"), {"status": "success"}
+    )
 
 
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
-def update_restaurant(request, id):
+def show_update_restaurant(request, id):
     restaurant = Restaurant.objects.get(id=id)
 
     form = RestaurantForm(request.POST or None, instance=restaurant)
@@ -159,12 +163,12 @@ def create_food(request, id):
     new_food = restaurant.foods.create(name=name, price=price, description=description)
     new_food.save()
 
-    return HttpResponseRedirect(reverse("restaurant:show_restaurant_detail", args=[id]))
+    return JsonResponse({"status": "success"}, status=201)
 
 
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
-def delete_food(request, restaurant_id, food_id):
+def show_delete_food(request, restaurant_id, food_id):
     restaurant = Restaurant.objects.get(id=restaurant_id)
     if restaurant.owner != request.user:
         return HttpResponse(b"Unauthorized", status=401)
@@ -180,7 +184,7 @@ def delete_food(request, restaurant_id, food_id):
 
 @login_required(login_url="/login/")
 @role_required(allowed_roles=["R"])
-def update_food(request, restaurant_id, food_id):
+def show_update_food(request, restaurant_id, food_id):
     restaurant = Restaurant.objects.get(id=restaurant_id)
     if restaurant.owner != request.user:
         return HttpResponse(b"Unauthorized", status=401)
@@ -213,3 +217,87 @@ def show_restaurant_detail(request, id):
 def show_restaurants(request):
     context = {"form": RestaurantForm()}
     return render(request, "restaurant_list.html", context)
+
+
+# Mobile API ===================================================================
+
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def delete_restaurant(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+    restaurant.delete()
+
+    return JsonResponse({"status": "success"}, status=200)
+
+
+@csrf_exempt
+@require_POST
+@login_required
+@role_required(allowed_roles=["R"])
+def update_restaurant(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+
+    form = RestaurantForm(request.POST or None, instance=restaurant)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+
+    return JsonResponse({"status": "failed"}, status=400)
+
+
+@csrf_exempt
+@require_POST
+@login_required
+@role_required(allowed_roles=["R"])
+def create_food(request, id):
+    restaurant = Restaurant.objects.get(id=id)
+    if restaurant.owner != request.user:
+        return JsonResponse({"status": "failed"}, status=401)
+
+    name = request.POST.get("name")
+    price = request.POST.get("price")
+    description = request.POST.get("description")
+
+    new_food = restaurant.foods.create(name=name, price=price, description=description)
+    new_food.save()
+
+    return JsonResponse({"status": "success"}, status=201)
+
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def delete_food(request, restaurant_id, food_id):
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+    if restaurant.owner != request.user:
+        return JsonResponse({"status": "failed"}, status=401)
+
+    food = restaurant.foods.get(id=food_id)
+
+    food.delete()
+
+    return JsonResponse({"status": "success"}, status=200)
+
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def update_food(request, restaurant_id, food_id):
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+    if restaurant.owner != request.user:
+        return JsonResponse({"status": "failed"}, status=401)
+
+    food = restaurant.foods.get(id=food_id)
+
+    form = FoodForm(request.POST or None, instance=food)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+
+    return JsonResponse({"status": "failed"}, status=400)

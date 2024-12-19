@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from promo.models import Promo
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from restaurant.models import Restaurant
 from cart_and_order.models import Cart
 from django.urls import reverse
@@ -234,25 +235,55 @@ def simulate_promo(request):
 
 # ============== FOR BACKEND FLUTTER ====================
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import Promo, Restaurant
+
+@csrf_exempt
 @login_required
 def mobile_promo_home(request):
     other_promos = []
     if request.user.role == "A":
-        promos = list(Promo.objects.all().values())
+        promos = Promo.objects.all()
     elif request.user.role == "R":
         owned_restaurants = Restaurant.objects.filter(owner=request.user)
-        other_promos = list(Promo.objects.exclude(user=request.user).distinct().values())
-        promos = list(Promo.objects.filter(user=request.user).values())
+        other_promos = Promo.objects.exclude(user=request.user).distinct()
+        promos = Promo.objects.filter(user=request.user)
     else:
-        promos = list(Promo.objects.filter(shown_to_public=True).values())
+        promos = Promo.objects.filter(shown_to_public=True)
+
+    # Helper function to serialize promos with restaurants
+    def serialize_promo(promo):
+        all_restaurants = list(promo.restaurant.values_list('name', flat=True))
+        return {
+            'id': str(promo.id),
+            'user_id': str(promo.user_id),
+            'type': promo.type,
+            'value': promo.value,
+            'min_payment': promo.min_payment,
+            'promo_code': promo.promo_code,
+            'expiry_date': promo.expiry_date,
+            'max_usage': promo.max_usage,
+            'shown_to_public': promo.shown_to_public,
+            'restaurants': all_restaurants,
+        }
+
+    promos_data = [serialize_promo(promo) for promo in promos]
+    other_promos_data = [serialize_promo(promo) for promo in other_promos]
+
     data = {
-        'promos': promos,
-        'other_promos': other_promos,
-        'message': 'No promos available' if not promos and not other_promos else ''
+        'promos': promos_data,
+        'other_promos': other_promos_data,
+        'message': 'No promos available' if not promos_data and not other_promos_data else '',
     }
     return JsonResponse(data)
 
+
+
+@csrf_exempt
 @login_required
+@role_required(allowed_roles=["C"])
 def mobile_use_promo(request, restaurant_id):
     if request.method == 'GET':
         try:
@@ -282,23 +313,30 @@ def mobile_use_promo(request, restaurant_id):
     # Implement POST method if needed
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+@csrf_exempt
 @login_required
 def mobile_promo_details(request, promo_id):
     try:
         promo = Promo.objects.get(id=promo_id)
         data = {
-            'promo_code': promo.promo_code,
+            'id': promo.id,
+            'user_id': promo.user.id,
             'type': promo.type,
             'value': promo.value,
             'min_payment': promo.min_payment,
+            'promo_code': promo.promo_code,
             'expiry_date': str(promo.expiry_date),
+            'max_usage': promo.max_usage,
+            'shown_to_public': promo.shown_to_public,
             'restaurants': list(promo.restaurant.values_list('name', flat=True))
         }
         return JsonResponse(data)
     except Promo.DoesNotExist:
         return JsonResponse({'error': 'Promo not found'}, status=404)
-    
+
+@csrf_exempt 
 @login_required
+@role_required(allowed_roles=["R"])
 @require_http_methods(["GET", "POST"])  # Allow only GET and POST requests.
 def mobile_edit_promo(request, promo_id):
     if request.user.role == "A":
@@ -323,12 +361,10 @@ def mobile_edit_promo(request, promo_id):
     promo_data['restaurants'] = list(restaurant_queryset.values())
     return JsonResponse(promo_data)
 
+@csrf_exempt
 @login_required
-@require_http_methods(["POST"])  # Ensure that only POST is used for deletion
+@role_required(allowed_roles=["R"])
 def mobile_delete_promo(request, promo_id):
-    if not request.user.has_perm('delete_promo'):
-        return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
-    
     promo = get_object_or_404(Promo, id=promo_id)
     promo.delete()
     return JsonResponse({'status': 'success', 'message': 'Promo deleted successfully'})
