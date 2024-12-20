@@ -235,11 +235,6 @@ def simulate_promo(request):
 
 # ============== FOR BACKEND FLUTTER ====================
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from .models import Promo, Restaurant
-
 @csrf_exempt
 @login_required
 def mobile_promo_home(request):
@@ -334,6 +329,56 @@ def mobile_promo_details(request, promo_id):
     except Promo.DoesNotExist:
         return JsonResponse({'error': 'Promo not found'}, status=404)
 
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def mobile_add_promo(request):
+    promo_type = request.POST.get("type")
+    value = request.POST.get("value")
+    min_payment = request.POST.get("min_payment")
+    restaurant_ids = request.POST.get("restaurants", "")
+    selected_restaurant = restaurant_ids.split(",") if restaurant_ids else []
+    promo_code = request.POST.get("promo_code")
+    expiry_date = request.POST.get("expiry_date")
+    max_usage = request.POST.get("max_usage")
+    shown_to_public = request.POST.get("shown_to_public")
+    if shown_to_public.strip().lower() == "true":
+        shown_to_public = True
+    else:
+        shown_to_public = False
+    
+    if Promo.objects.filter(promo_code=promo_code).exists():
+        return JsonResponse({"status": "error", "message": "Promo code already exists."}, status=400)
+
+    owner = request.user
+
+    new_promo = Promo.objects.create(
+        user = owner,
+        type = promo_type,
+        value = value,
+        min_payment = min_payment,
+        promo_code = promo_code,
+        expiry_date = expiry_date,
+        max_usage = max_usage,
+        shown_to_public = shown_to_public,
+    )
+    if selected_restaurant:
+        for restaurant_id in selected_restaurant:
+            restaurant_obj = Restaurant.objects.get(pk=restaurant_id)
+            new_promo.restaurant.add(restaurant_obj)
+
+    new_promo.save()
+
+    return JsonResponse({"status": "success"}, status=201)
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def check_promo_code(request, promo_code):
+    if Promo.objects.filter(promo_code=promo_code).exists():
+        return JsonResponse({"exists": True}, status=200)
+    return JsonResponse({"exists": False}, status=200)
+
 @csrf_exempt 
 @login_required
 @role_required(allowed_roles=["R"])
@@ -368,3 +413,18 @@ def mobile_delete_promo(request, promo_id):
     promo = get_object_or_404(Promo, id=promo_id)
     promo.delete()
     return JsonResponse({'status': 'success', 'message': 'Promo deleted successfully'})
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["A", "R"])
+def owned_resto(request):
+    # Query the restaurants owned by the user
+    restos = Restaurant.objects.filter(owner=request.user)
+    
+    # Serialize the queryset into a list of dictionaries
+    restos_data = list(restos.values('id', 'name', 'address'))  # Include fields you want in the response
+    
+    data = {
+        'restos': restos_data
+    }
+    return JsonResponse(data)

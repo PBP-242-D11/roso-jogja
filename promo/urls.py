@@ -1,5 +1,5 @@
 from django.urls import path
-from promo.views import promo_home, add_promo, remove_promo, edit_promo, use_promo, promo_details, apply_promo, simulate_promo, mobile_promo_home, mobile_use_promo, mobile_promo_details, mobile_edit_promo, mobile_delete_promo
+from promo.views import promo_home, add_promo, remove_promo, edit_promo, use_promo, promo_details, apply_promo, simulate_promo, mobile_promo_home, mobile_use_promo, mobile_promo_details, mobile_edit_promo, mobile_delete_promo, mobile_add_promo, owned_resto, check_promo_code
 
 app_name = 'promo'
 
@@ -17,4 +17,7 @@ urlpatterns = [
     path('mobile_promo_details/<uuid:promo_id>/', mobile_promo_details, name='mobile_promo_details'),
     path('mobile_edit_promo/<uuid:promo_id>/', mobile_edit_promo, name='mobile_edit_promo'),
     path('mobile_delete_promo/<uuid:promo_id>/', mobile_delete_promo, name='mobile_delete_promo'),
+    path('mobile_add_promo/', mobile_add_promo, name='mobile_add_promo'),
+    path('owned_resto/', owned_resto, name='owned_resto'),
+    path('check_promo_code/<str:promo_code>', check_promo_code, name='check_promo_code'),
 ]
