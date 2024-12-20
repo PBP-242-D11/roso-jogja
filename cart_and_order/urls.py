@@ -14,7 +14,8 @@ from .views import (
     add_food_to_cart_api,
     remove_food_from_cart_api,
     update_food_quantity_api,
-    clear_cart_api
+    clear_cart_api,
+    create_order_api
 )
 
 app_name = "order"
@@ -31,9 +32,10 @@ urlpatterns = [
 
     # flutter
     path("api/show_orders/", show_order_flutter, name="order_history"),
-    path('api/cart/add/<int:food_id>/', add_food_to_cart_api, name='add_food_to_cart_api'),
-    path('api/cart/remove/<int:food_id>/', remove_food_from_cart_api, name='remove_item_from_cart_api'),
-    path('api/cart/update/<int:food_id>/', update_food_quantity_api, name='update_item_quantity_api'),
+    path('api/cart/add/<uuid:food_id>/', add_food_to_cart_api, name='add_food_to_cart_api'),
+    path('api/cart/remove/<uuid:food_id>/', remove_food_from_cart_api, name='remove_item_from_cart_api'),
+    path('api/cart/update/<uuid:food_id>/', update_food_quantity_api, name='update_item_quantity_api'),
     path('api/cart/clear/', clear_cart_api, name='clear_cart_api'),
-    path('api/cart/', show_cart_flutter, name='get_cart_items_api'),
+    path('api/mobile_cart/', show_cart_flutter, name='get_cart_items_api'),
+    path("api/mobile_create_order/", create_order_api, name="create_order_api"),
 ]
