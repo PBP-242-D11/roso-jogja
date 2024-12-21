@@ -41,10 +41,10 @@ class Promo(models.Model):
         else: # State: untuk voucher available
             if self.type == "Percentage":
                 self.max_usage-=1
-                return payment*(100-self.value)/100 # State: promo yang dipakai persentase
+                return float(payment)*(100-self.value)/100 # State: promo yang dipakai persentase
             elif self.type == "Fixed Price":
                 self.max_usage-=1
-                return payment-self.value # State: promo yang dipakai fixed price
+                return float(payment)-self.value # State: promo yang dipakai fixed price
         return -2 # Unknown error
     
     def simulate_promo(self, payment, restaurant_id):
@@ -58,7 +58,7 @@ class Promo(models.Model):
             return 0 # State: voucher habis
         else: # State: untuk voucher available
             if self.type == "Percentage":
-                return payment*(100-self.value)/100 # State: promo yang dipakai persentase
+                return float(payment)*(100-self.value)/100 # State: promo yang dipakai persentase
             elif self.type == "Fixed Price":
-                return payment-self.value # State: promo yang dipakai fixed price
+                return float(payment)-self.value # State: promo yang dipakai fixed price
         return -2 # Unknown error

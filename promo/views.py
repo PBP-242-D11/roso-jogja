@@ -274,12 +274,33 @@ def mobile_promo_home(request):
     }
     return JsonResponse(data)
 
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["C"])
+def find_by_code(request, promo_code):
+    if request.method == 'GET':
+        try:
+            promo = Promo.objects.filter(promo_code=promo_code).first()
+            if not promo:
+                return JsonResponse({'error': 'Promo not found'}, status=404)
 
+            data = {
+                'promo': {
+                    'id': promo.id,
+                    'promo_code': promo.promo_code,
+                    'value': promo.value,
+                    'expiry_date': promo.expiry_date,
+                }
+            }
+            return JsonResponse(data)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 @csrf_exempt
 @login_required
 @role_required(allowed_roles=["C"])
-def mobile_use_promo(request, restaurant_id):
+def mobile_use_promo(request, restaurant_id): # use promo page
     if request.method == 'GET':
         try:
             cart = get_object_or_404(Cart, user=request.user)
@@ -300,7 +321,6 @@ def mobile_use_promo(request, restaurant_id):
                 'promos': promos,
                 'other_promos': other_promos,
                 'message': 'Enter a promo code if none are available.',
-                'restaurant_id': restaurant_id
             }
             return JsonResponse(data)
         except Cart.DoesNotExist:
@@ -308,6 +328,57 @@ def mobile_use_promo(request, restaurant_id):
     # Implement POST method if needed
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+@csrf_exempt
+@login_required
+def tag_promo(request):
+    try:
+        # Get the promo ID from the request payload
+        promo_id = request.GET.get('promo_id')
+
+        # Validate the promo ID
+        if not promo_id:
+            return JsonResponse({'error': 'Promo ID is required'}, status=400)
+
+        # Find the promo
+        promo = Promo.objects.filter(id=promo_id).first()
+        if not promo:
+            return JsonResponse({'error': 'Promo not found'}, status=404)
+
+        # Check promo constraints
+        if promo.max_usage == 0:
+            return JsonResponse({'error': 'Promo usage limit reached'}, status=400)
+        if promo.expiry_date < date.today():
+            return JsonResponse({'error': 'Promo has expired'}, status=400)
+
+        # Check if the user has already tagged this promo
+        user = request.user
+        cart = get_object_or_404(Cart, user=request.user)
+        cart.promo = promo_id
+
+        # Decrease max usage of the promo
+        promo.max_usage -= 1
+        promo.save()
+        cart.save()
+
+        return JsonResponse({'status': 'success', 'message': 'Promo tagged successfully'})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+@login_required
+def remove_promo_usage(request):
+    try:
+        cart = get_object_or_404(Cart, user=request.user)
+        cart.promo = ""
+        cart.save() 
+
+        return JsonResponse({'status': 'success', 'message': 'Promo deleted successfully.'})
+    except Promo.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Promo not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
 @csrf_exempt
 @login_required
 def mobile_promo_details(request, promo_id):
