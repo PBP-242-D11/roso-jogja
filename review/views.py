@@ -92,4 +92,58 @@ def json_reviews(request, restaurant_id):
     
     return JsonResponse({"reviews": reviews_data})
 
+@csrf_exempt
+@require_POST
+def add_review_mobile(request, restaurant_id):
 
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "You must be logged in."}, status=401)
+
+    user = request.user
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    user_orders = Order.objects.filter(user=user, restaurant=restaurant)
+    if not user_orders.exists():
+        return JsonResponse({"error": "You need to order from this restaurant before leaving a review."}, status=403)
+
+    data = request.POST
+    rating = strip_tags(data.get("rating"))
+    comment = strip_tags(data.get("comment", ""))
+
+    if not rating or not rating.isdigit():
+        return JsonResponse({"error": "Invalid rating."}, status=400)
+    rating_int = int(rating)
+    if rating_int < 1 or rating_int > 5:
+        return JsonResponse({"error": "Rating out of range."}, status=400)
+
+    review = Review.objects.create(
+        restaurant=restaurant,
+        user=user,
+        rating=rating_int,
+        comment=comment
+    )
+
+    return JsonResponse({
+        "status": "success",   
+        "review": {
+            "user": review.user.username,
+            "rating": review.rating,
+            "comment": review.comment,
+            "created_at": review.created_at.strftime("%B %d, %Y")
+        }
+    }, status=201)
+
+@csrf_exempt
+def delete_review_mobile(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    
+    if request.user != review.user:
+        return JsonResponse(
+            {"success": False},
+            status=403
+        )
+    
+    # Menghapus review
+    review.delete()
+    
+    return JsonResponse({"success": True})

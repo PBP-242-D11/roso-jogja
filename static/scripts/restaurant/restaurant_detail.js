@@ -243,7 +243,7 @@ async function submitReview() {
   const csrfToken = document
     .getElementById("restaurant-reviews")
     .getAttribute("data-csrf-token");
-  const response = await fetch(`/reviews/api/add_review/${id}/`, {
+  const response = await fetch(`/review/api/add_review/${id}/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -290,7 +290,7 @@ async function deleteReview(reviewId, reviewElement) {
   const csrfToken = document
     .getElementById("restaurant-reviews")
     .getAttribute("data-csrf-token");
-  const response = await fetch(`/reviews/api/delete_review/${reviewId}/`, {
+  const response = await fetch(`/review/api/delete_review/${reviewId}/`, {
     method: "DELETE",
     headers: {
       "X-CSRFToken": csrfToken,
