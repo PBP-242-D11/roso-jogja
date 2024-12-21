@@ -1,7 +1,7 @@
 import json
-from django.core import serializers
 
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -53,7 +53,7 @@ def create_order(request):
                 quantity=cart_item.quantity,
                 price_at_order=cart_item.food.price,
             )
-        
+
         if order.total_price == 0:
             order.total_price = order.calculate_total_price
 
@@ -105,13 +105,12 @@ def show_cart(request):
     cart = request.user.get_or_create_cart
     cart_items = cart.cart_items.all()
     total_price = cart.total_price
-    
 
     context = {
-        'cart_items': cart_items,
-        'username': cart.user.username,
-        'restaurant': cart.restaurant,
-        'total_price': total_price,
+        "cart_items": cart_items,
+        "username": cart.user.username,
+        "restaurant": cart.restaurant,
+        "total_price": total_price,
     }
     return render(request, "cart.html", context)
 
@@ -199,30 +198,32 @@ def show_orders(request):
         "total_orders": total_orders,
         "total_spent": total_spent,
     }
-    return render(request, 'order_history.html', context)
+    return render(request, "order_history.html", context)
+
 
 # FLUTTER
+
 
 @login_required
 @require_GET
 def show_order_flutter(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    orders = Order.objects.filter(user=request.user).order_by("-created_at")
 
     total_orders = orders.count()
     total_spent = str(sum(order.total_price for order in orders))
 
     response = {
-        "total_order" : total_orders,
-        "total_spent" : total_spent,
-        "orders" : [
-            {   
-                "id" : str(order.order_id),
+        "total_order": total_orders,
+        "total_spent": total_spent,
+        "orders": [
+            {
+                "id": str(order.order_id),
                 "notes": order.notes,
-                "payment_method" : str(order.payment_method),
-                "total_price" : str(order.total_price),
-                "created_at" : order.created_at.strftime("%d %B %Y %H:%M"),
-                "promo_cut" : str(order.promo_cut),
-                "restaurant" : order.restaurant.name,
+                "payment_method": str(order.payment_method),
+                "total_price": str(order.total_price),
+                "created_at": order.created_at.strftime("%d %B %Y %H:%M"),
+                "promo_cut": str(order.promo_cut),
+                "restaurant": order.restaurant.name,
                 "order_items": [
                     {
                         "food_name": item.food.name,
@@ -233,11 +234,11 @@ def show_order_flutter(request):
                 ],
             }
             for order in orders
-        ]
-
+        ],
     }
 
-    return JsonResponse (response, safe=False)
+    return JsonResponse(response, safe=False)
+
 
 @login_required
 @require_GET
@@ -247,24 +248,29 @@ def show_cart_flutter(request):
 
     response = {
         "total": str(cart.total_price),
-        "restaurant": {
-            "name": cart.restaurant.name if cart.restaurant else None,
-            "id": cart.restaurant.id if cart.restaurant else None,
-        } if cart.restaurant else None,
-        "items":[
-                {
-                'id': str(item.food.id),
-                'name': item.food.name,
-                'price': item.food.price,
-                'quantity': item.quantity,
+        "restaurant": (
+            {
+                "name": cart.restaurant.name if cart.restaurant else None,
+                "id": cart.restaurant.id if cart.restaurant else None,
+            }
+            if cart.restaurant
+            else None
+        ),
+        "items": [
+            {
+                "id": str(item.food.id),
+                "name": item.food.name,
+                "price": item.food.price,
+                "quantity": item.quantity,
             }
             for item in cart_items
-        ]
+        ],
     }
 
     return JsonResponse(response, safe=False)
 
-#add food to cart
+
+# add food to cart
 @csrf_exempt
 @login_required
 def add_food_to_cart_api(request, food_id):
@@ -278,6 +284,7 @@ def add_food_to_cart_api(request, food_id):
     except ValueError as e:
         return JsonResponse({"error": "Food cannot be added to cart"}, status=400)
 
+
 @csrf_exempt
 @login_required
 def clear_cart_api(request):
@@ -286,6 +293,7 @@ def clear_cart_api(request):
     cart.restaurant = None
     cart.save()
     return JsonResponse({"message": "Successfully cleared the cart"}, status=200)
+
 
 @csrf_exempt
 @login_required
@@ -298,11 +306,12 @@ def remove_food_from_cart_api(request, food_id):
     except CartItem.DoesNotExist:
         return JsonResponse({"error": "Item not found in cart"}, status=404)
 
+
 @csrf_exempt
 @login_required
 @require_GET
 def update_food_quantity_api(request, food_id):
-    quantity = request.GET.get('quantity')
+    quantity = request.GET.get("quantity")
     if quantity is None:
         return JsonResponse({"error": "Quantity is required"}, status=400)
     try:
@@ -325,23 +334,27 @@ def update_food_quantity_api(request, food_id):
         else:
             cart_item.quantity = quantity
             cart_item.save()
-            return JsonResponse({
-                "message": "Item quantity updated successfully",
-                "cart_item": {
-                    "food_id": cart_item.food.id,
-                    "food_name": cart_item.food.name,
-                    "quantity": cart_item.quantity,
-                    "price_at_order": str(cart_item.food.price),
-                }
-            }, status=200)
+            return JsonResponse(
+                {
+                    "message": "Item quantity updated successfully",
+                    "cart_item": {
+                        "food_id": cart_item.food.id,
+                        "food_name": cart_item.food.name,
+                        "quantity": cart_item.quantity,
+                        "price_at_order": str(cart_item.food.price),
+                    },
+                },
+                status=200,
+            )
     except CartItem.DoesNotExist:
         return JsonResponse({"error": "Item not found in cart"}, status=404)
+
 
 @csrf_exempt
 @login_required
 @role_required(["C"])
 def create_order_api(request):
-    cart, created = Cart.objects.get_or_create(user=request.user) 
+    cart, created = Cart.objects.get_or_create(user=request.user)
 
     if not cart.cart_items.exists():
         return JsonResponse({"status": "error", "message": "Cart is empty"}, status=400)
@@ -356,7 +369,9 @@ def create_order_api(request):
             discount = 0
 
         if not payment_method:
-            return JsonResponse({"status": "error", "message": "Payment method is required"}, status=400)
+            return JsonResponse(
+                {"status": "error", "message": "Payment method is required"}, status=400
+            )
 
         order = Order.objects.create(
             user=request.user,
@@ -374,7 +389,7 @@ def create_order_api(request):
                 quantity=cart_item.quantity,
                 price_at_order=cart_item.food.price,
             )
-        
+
         if order.total_price == 0:
             order.total_price = order.calculate_total_price
 
@@ -385,8 +400,15 @@ def create_order_api(request):
         cart.restaurant = None
         cart.save()
 
-        return JsonResponse({"status": "success", "message": "Order Created Successfully"}, status=201)
+        return JsonResponse(
+            {"status": "success", "message": "Order Created Successfully"}, status=201
+        )
     except json.JSONDecodeError:
-        return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
+        return JsonResponse(
+            {"status": "error", "message": "Invalid JSON data"}, status=400
+        )
     except Exception as e:
-        return JsonResponse({"status": "error", "message": "Failed to create order"}, status=500)
+        return JsonResponse(
+            {"status": "error", "message": "Failed to create order"}, status=500
+        )
+
