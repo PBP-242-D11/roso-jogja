@@ -302,6 +302,7 @@ def remove_food_from_cart_api(request, food_id):
     try:
         cart_item = cart.cart_items.get(food_id=food_id)
         cart_item.delete()
+        cart.restaurant = None ; cart.save() if not cart.cart_items.exists() else None
         return JsonResponse({"message": "Item removed from cart"}, status=200)
     except CartItem.DoesNotExist:
         return JsonResponse({"error": "Item not found in cart"}, status=404)
