@@ -332,30 +332,24 @@ def mobile_use_promo(request, restaurant_id): # use promo page
 @login_required
 def tag_promo(request):
     try:
-        # Get the promo ID from the request payload
         promo_id = request.GET.get('promo_id')
 
-        # Validate the promo ID
         if not promo_id:
             return JsonResponse({'error': 'Promo ID is required'}, status=400)
 
-        # Find the promo
         promo = Promo.objects.filter(id=promo_id).first()
         if not promo:
             return JsonResponse({'error': 'Promo not found'}, status=404)
 
-        # Check promo constraints
         if promo.max_usage == 0:
             return JsonResponse({'error': 'Promo usage limit reached'}, status=400)
         if promo.expiry_date < date.today():
             return JsonResponse({'error': 'Promo has expired'}, status=400)
 
-        # Check if the user has already tagged this promo
         user = request.user
         cart = get_object_or_404(Cart, user=request.user)
         cart.promo = promo_id
 
-        # Decrease max usage of the promo
         promo.max_usage -= 1
         promo.save()
         cart.save()
@@ -443,39 +437,41 @@ def mobile_add_promo(request):
     return JsonResponse({"status": "success"}, status=201)
 
 @csrf_exempt
+@require_POST
 @login_required
 @role_required(allowed_roles=["R"])
-def check_promo_code(request, promo_code):
-    if Promo.objects.filter(promo_code=promo_code).exists():
-        return JsonResponse({"exists": True}, status=200)
-    return JsonResponse({"exists": False}, status=200)
-
-@csrf_exempt 
-@login_required
-@role_required(allowed_roles=["R"])
-@require_http_methods(["GET", "POST"])  # Allow only GET and POST requests.
 def mobile_edit_promo(request, promo_id):
-    if request.user.role == "A":
-        restaurant_queryset = Restaurant.objects.all()
-    elif request.user.role == "R":
-        restaurant_queryset = Restaurant.objects.filter(owner=request.user)
-    
-    promo = get_object_or_404(Promo, id=promo_id)
-    
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        form = PromoForm(data, instance=promo, restaurant_queryset=restaurant_queryset)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({'status': 'success', 'message': 'Promo updated successfully'})
-        else:
-            errors = form.errors.as_json()
-            return JsonResponse({'status': 'error', 'errors': errors}, status=400)
-    
-    # If GET, return promo details for editing
-    promo_data = model_to_dict(promo)
-    promo_data['restaurants'] = list(restaurant_queryset.values())
-    return JsonResponse(promo_data)
+    promo = Promo.objects.get(id=promo_id)
+    promo_type = request.POST.get("type")
+    value = request.POST.get("value")
+    min_payment = request.POST.get("min_payment")
+    restaurant_ids = request.POST.get("restaurants", "")
+    selected_restaurant = restaurant_ids.split(",") if restaurant_ids else []
+    promo_code = request.POST.get("promo_code")
+    expiry_date = request.POST.get("expiry_date")
+    max_usage = request.POST.get("max_usage")
+    shown_to_public = request.POST.get("shown_to_public")
+    if shown_to_public.strip().lower() == "true":
+        shown_to_public = True
+    else:
+        shown_to_public = False
+    try:
+        promo.type = promo_type
+        promo.value = value
+        promo.min_payment = min_payment
+        if selected_restaurant:
+            for restaurant_id in selected_restaurant:
+                restaurant_obj = Restaurant.objects.get(pk=restaurant_id)
+                if not promo.restaurant.filter(pk=restaurant_obj.pk).exists():
+                    promo.restaurant.add(restaurant_obj)
+        promo.promo_code = promo_code
+        promo.expiry_date = expiry_date
+        promo.max_usage = max_usage
+        promo.shown_to_public = shown_to_public
+        promo.save()
+        return JsonResponse({"status": "success"}, status=200)
+    except:
+        return JsonResponse({"status": "failed"}, status=400)
 
 @csrf_exempt
 @login_required
@@ -484,6 +480,14 @@ def mobile_delete_promo(request, promo_id):
     promo = get_object_or_404(Promo, id=promo_id)
     promo.delete()
     return JsonResponse({'status': 'success', 'message': 'Promo deleted successfully'})
+
+@csrf_exempt
+@login_required
+@role_required(allowed_roles=["R"])
+def check_promo_code(request, promo_code):
+    if Promo.objects.filter(promo_code=promo_code).exists():
+        return JsonResponse({"exists": True}, status=200)
+    return JsonResponse({"exists": False}, status=200)
 
 @csrf_exempt
 @login_required
