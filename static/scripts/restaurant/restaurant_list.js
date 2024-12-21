@@ -163,8 +163,8 @@ function updatePagination(response) {
 
   let pageString = "";
   if (response.current_page > 1 + PAGE_WIDTH) {
-    pageString += `<a href="?page=1" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">1</a>`;
-    pageString += `<span class="font-semibold text-green-800">...</span>`;
+    pageString += `<a href="?page=1" class="${pageClass} text-white cursor_pointer hover:bg-orange-600 bg-orange-800">1</a>`;
+    pageString += `<span class="font-semibold text-orange-800">...</span>`;
   }
 
   response.page_range.forEach((page) => {
@@ -176,13 +176,13 @@ function updatePagination(response) {
 
     pageString +=
       page === response.current_page
-        ? `<span class="${pageClass} text-green-800">${page}</span>`
-        : `<a href="?page=${page}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${page}</a>`;
+        ? `<span class="${pageClass} text-orange-800">${page}</span>`
+        : `<a href="?page=${page}" class="${pageClass} text-white cursor_pointer hover:bg-orange-600 bg-orange-800">${page}</a>`;
   });
 
   if (response.current_page < response.num_pages - PAGE_WIDTH) {
-    pageString += `<span class="font-semibold text-green-800">...</span>`;
-    pageString += `<a href="?page=${response.num_pages}" class="${pageClass} text-white cursor_pointer hover:bg-green-600 bg-green-800">${response.num_pages}</a>`;
+    pageString += `<span class="font-semibold text-orange-800">...</span>`;
+    pageString += `<a href="?page=${response.num_pages}" class="${pageClass} text-white cursor_pointer hover:bg-orange-600 bg-orange-800">${response.num_pages}</a>`;
   }
 
   pageInfo.innerHTML = pageString;
@@ -381,7 +381,7 @@ function showNotification(message, type) {
 
   // Tambahkan kelas warna berdasarkan tipe
   if (type === "success") {
-    notification.classList.add("bg-green-500"); // Hijau untuk success
+    notification.classList.add("bg-orange-500"); // Hijau untuk success
   } else if (type === "error") {
     notification.classList.add("bg-red-500"); // Merah untuk error
   }
